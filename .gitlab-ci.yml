@@ -1,0 +1,37 @@
+stages:
+  - build
+
+Ubuntu-subproject:
+  stage: build
+  script:
+  - module load Qt-5.9
+  - module load Eigen-3.1.2
+  - bash .gitlab-ci.sh
+  tags:
+  - ubuntu
+  except:
+  - tags
+
+OSX-subproject:
+  stage: build
+  script:
+  - module load Qt-5.9.1
+  - module load Eigen-3.1.2
+  - bash .gitlab-ci.sh
+  tags:
+  - osx-sierra
+  except:
+  - tags
+
+Win7-VS14-x64-subproject:
+  stage: build
+  script:
+  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\Eigen-3.1.2-vs14.bat
+  - set PATH=%PATH%;"c:\Program Files\Git\bin"
+  - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - bash --login .gitlab-ci.sh
+  tags:
+  - win7
+  except:
+  - tags
