@@ -24,6 +24,19 @@ namespace skelgenerator {
         std::vector <Eigen::Vector3f> points;
         unsigned int nCircles;
     } TSegment;
+
+    typedef struct {
+        std::string nombre;
+        std::vector <Eigen::Vector3f> points;
+        unsigned int nCircles;
+    } TSpine;
+
+    typedef struct {
+        std::vector<TSegment> segments;
+        std::vector<TSpine> spines;
+    } TDendrite;
+
+
 }
 
 

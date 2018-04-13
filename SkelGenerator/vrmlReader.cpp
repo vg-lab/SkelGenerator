@@ -8,15 +8,16 @@
 #include <iostream>
 #include "Types.h"
 
+
+
+
 namespace skelgenerator {
-
-
-    const int POINTS_PER_CIRCLE = 17;
+    const int POINTS_PER_CIRCLE = 16;
 
     TSegment parseFilament(const std::string &name, std::ifstream &file) {
         TSegment segment;
         std::string line;
-        std::vector <Eigen::Vector3f> points;
+        std::vector<Eigen::Vector3f> points;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
         while (file >> line) {
             if (line.find("point") != std::string::npos) {
@@ -48,21 +49,25 @@ namespace skelgenerator {
         return segment;
     }
 
-    std::vector <TSegment> readVrmlApical(const std::string &path) {
-        std::vector <TSegment> dentrite;
+    std::vector<TSegment> readVrmlApical(const std::string &path) {
+        std::vector<TSegment> dentrite;
         std::string line;
         std::ifstream file(path);
 
         while (file >> line) {
             if (line.find("FilamentSegment6") != std::string::npos) {
+                std::cout << line << std::endl;
                 dentrite.push_back(parseFilament(line, file));
+            } else if (line.find("FilamentSegment7") != std::string::npos) {
+                std::cout << line << std::endl;
             }
         }
+        std::cout << "------------------finish Apical Dendrite-----------------------------" << std::endl;
         return dentrite;
     }
 
-    std::vector <std::vector<TSegment>> readVrmlBasal(const std::string &path) {
-        std::vector <std::vector<TSegment>> dentrites;
+    std::vector<std::vector<TSegment>> readVrmlBasal(const std::string &path) {
+        std::vector<std::vector<TSegment>> dentrites;
         std::string line;
         std::ifstream file(path);
         int actual = -1;
@@ -71,6 +76,7 @@ namespace skelgenerator {
         dentrites.emplace_back();
         while (file >> line) {
             if (line.find("FilamentSegment6") != std::string::npos) {
+                std::cout << line << std::endl;
                 ant = actual;
                 actual = std::stoi(line.substr(20, line.size() - 1));
                 if (actual != ant + 1) {
@@ -78,13 +84,24 @@ namespace skelgenerator {
                     ant = -1;
                     dentrites.emplace_back();
                     index++;
+                    std::cout << "------------------finish Basal Dendrite-----------------------------" << std::endl;
                 }
                 dentrites[index].push_back(parseFilament(line, file));
+            } else if (line.find("FilamentSegment7") != std::string::npos) {
+                std::cout << line << std::endl;
             }
         }
+        std::cout << "------------------finish-----------------------------" << std::endl;
+
         return dentrites;
 
 
     }
 }
+/*
+int main(int argc, char *argv[]) {
+    readVrml("test.vrml");
+    auto fake = segments;
+    return 0;
+}*/
 

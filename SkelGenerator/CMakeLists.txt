@@ -20,6 +20,13 @@ set( SKELGENERATOR_SOURCES
         main.cpp
         MainWindow.cpp
         messagebox.cpp
+        NeuronRepresentation/Neuron.cpp
+        NeuronRepresentation/SamplePoint.cpp
+        NeuronRepresentation/Dendrite.cpp
+        NeuronRepresentation/Segment.cpp
+        NeuronRepresentation/SubDendrite.cpp
+        NeuronRepresentation/Spine.cpp
+        VRMLReader.cpp
         )
 
 set( SKELGENERATOR_HEADERS
@@ -27,8 +34,14 @@ set( SKELGENERATOR_HEADERS
         MainWindow.ui
         MainWindow.h
         messagebox.h
-        imarisskel.h
         Types.h
+        NeuronRepresentation/Neuron.h
+        NeuronRepresentation/SamplePoint.h
+        NeuronRepresentation/Dendrite.h
+        NeuronRepresentation/Segment.h
+        NeuronRepresentation/SubDendrite.h
+        NeuronRepresentation/Spine.h
+        VRMLReader.h
         )
 
 set( SKELGENERATOR_LINK_LIBRARIES
