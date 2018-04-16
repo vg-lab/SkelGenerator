@@ -14,7 +14,7 @@
 namespace skelgenerator {
     const int POINTS_PER_CIRCLE = 16;
 
-    TSegment parseFilament(const std::string &name, std::ifstream &file) {
+    static TSegment parseFilament(const std::string &name, std::ifstream &file) {
         TSegment segment;
         std::string line;
         std::vector<Eigen::Vector3f> points;
@@ -49,7 +49,7 @@ namespace skelgenerator {
         return segment;
     }
 
-    std::vector<TSegment> readVrmlApical(const std::string &path) {
+    static std::vector<TSegment> readVrmlApical(const std::string &path) {
         std::vector<TSegment> dentrite;
         std::string line;
         std::ifstream file(path);
@@ -66,7 +66,7 @@ namespace skelgenerator {
         return dentrite;
     }
 
-    std::vector<std::vector<TSegment>> readVrmlBasal(const std::string &path) {
+    static std::vector<std::vector<TSegment>> readVrmlBasal(const std::string &path) {
         std::vector<std::vector<TSegment>> dentrites;
         std::string line;
         std::ifstream file(path);

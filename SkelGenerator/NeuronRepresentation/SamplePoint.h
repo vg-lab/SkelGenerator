@@ -8,16 +8,20 @@
 
 #include <ostream>
 #include <eigen3/Eigen/Dense>
+namespace skelgenerator {
 
-class SamplePoint {
+    class SamplePoint {
 
-    std::vector <Eigen::Vector3f> point;
-    float r;
+        Eigen::Vector3f point;
+        float r;
 
-public:
-    friend std::ostream & operator<<(std::ostream & Str, const SamplePoint& point);
+    public:
+        SamplePoint(Eigen::Vector3f &point, float r);
 
-};
+        friend std::ostream &operator<<(std::ostream &Str, const SamplePoint &point);
+
+    };
+}
 
 
 #endif //SKELGENERATOR_SAMPLEDATA_H

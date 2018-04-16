@@ -13,4 +13,13 @@ namespace skelgenerator {
         }
         return Str;
     }
+
+    Segment::Segment(const std::string &name) {
+         this->name = name;
+
+    }
+
+    void Segment::addPoint(SamplePoint& samplePoint) {
+        this->points.push_back(samplePoint);
+    }
 }

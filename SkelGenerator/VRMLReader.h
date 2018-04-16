@@ -11,16 +11,16 @@
 namespace skelgenerator {
     class VRMLReader {
 
-        const int POINTS_PER_CIRCLE = 17;
+        static const int POINTS_PER_CIRCLE = 17;
 
     public:
-        TDendrite readVrmlApical(std::string apiFile);
-        std::vector<TDendrite> readBasalFile(std::string basalFile);
+        static TDendrite readVrmlApical(std::string apiFile);
+        static std::vector<TDendrite> readBasalFile(std::string basalFile);
 
     private:
-        TSegment parseFilament(const std::string &name, std::ifstream &file);
+        static TSegment parseFilament(const std::string &name, std::ifstream &file);
 
-        TSpine parseSpine(const std::string &name, std::ifstream &file);
+        static TSpine parseSpine(const std::string &name, std::ifstream &file);
     };
 }
 

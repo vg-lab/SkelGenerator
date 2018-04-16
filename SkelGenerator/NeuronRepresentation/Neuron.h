@@ -16,10 +16,12 @@ namespace skelgenerator {
         std::vector<std::vector<Dendrite>> basals;
 
     public:
-        Neuron(std::string apiFile,std::vector<std::string> basalFiles);
+        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles);
 
     private:
-        std::tuple<std::vector<TSegment>,std::vector<TSpine>> readVrmlApi(std::string apiFile);
+        std::vector<Segment> generateSegments(TDendrite dendrite);
+
+        Segment getSegment(const TSegment &segment);
     };
 }
 

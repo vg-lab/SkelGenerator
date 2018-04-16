@@ -17,6 +17,9 @@ namespace skelgenerator {
 
     public:
         friend std::ostream& operator<<(std::ostream &Str,const Segment & segment);
+        Segment(const std::string& name);
+        void addPoint(SamplePoint& samplePoint);
+
     };
 
 }
