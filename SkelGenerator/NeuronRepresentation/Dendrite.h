@@ -19,11 +19,14 @@ namespace skelgenerator {
     };
 
     class Dendrite {
-        SubDendrite dendrite;
+        SubDendrite * dendrite;
         DENDTYPE dendtype;
-
     public:
-        friend std::ostream &operator<<(std::ostream &Str, const Dendrite& d);
+        void setDendrite(SubDendrite *dendrite);
+
+        void setDendtype(DENDTYPE dendtype);
+
+        std::string to_asc(std::string tab);
 
 
     };

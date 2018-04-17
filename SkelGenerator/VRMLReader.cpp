@@ -84,6 +84,11 @@ namespace skelgenerator {
         std::string line;
         std::ifstream file(apiFile);
 
+        if(file.is_open()) {
+
+        }
+
+
         while (file >> line) {
             if (line.find("FilamentSegment6") != std::string::npos) {
                 dendrite.segments.push_back(parseFilament(line, file));

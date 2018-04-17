@@ -8,6 +8,7 @@
 
 #include <ostream>
 #include <eigen3/Eigen/Dense>
+#include <iostream>
 namespace skelgenerator {
 
     class SamplePoint {
@@ -18,8 +19,11 @@ namespace skelgenerator {
     public:
         SamplePoint(Eigen::Vector3f &point, float r);
 
-        friend std::ostream &operator<<(std::ostream &Str, const SamplePoint &point);
+        const Eigen::Vector3f &getPoint() const;
 
+        float getRadius() const;
+
+        std::string to_asc(std::string tab )const;
     };
 }
 

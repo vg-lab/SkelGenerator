@@ -112,8 +112,7 @@ namespace skelgenerator {
 
         stack <TSegToProcess> segsToProcess;
 
-        // Se inserta un segmento inicial
-        segsToProcess.push(TSegToProcess{0, 0, 0});
+        // Se inserta un segmento inicialsegsToProcess.push(TSegToProcess{0, 0, 0});
 
         /*ADDED: Tcons contiene p1,s1,p2,s2 donde p1 y p2 son los numeros de los segmentos involucrados y s1 es el indice del primer circulo que conecta del
         * segmento(No se usa para nada) y s2 es el circulo que conecta del otro segmento */

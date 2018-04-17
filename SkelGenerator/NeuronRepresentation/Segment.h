@@ -16,9 +16,23 @@ namespace skelgenerator {
         std::string name;
 
     public:
-        friend std::ostream& operator<<(std::ostream &Str,const Segment & segment);
+        Segment() = default;
         Segment(const std::string& name);
         void addPoint(SamplePoint& samplePoint);
+        int size();
+
+        SamplePoint& operator[] (std::size_t idx) { return points[idx];}
+
+        const SamplePoint& operator[] (std::size_t idx) const { return points[idx];}
+
+        std::tuple<Segment *,Segment *> split(int i);
+
+        const std::string &getName() const;
+
+        std::string to_asc(std::string tab);
+
+        static Segment * unionSegment(Segment * segment1, Segment *segment2);
+
 
     };
 

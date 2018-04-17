@@ -9,14 +9,21 @@
 #include <vector>
 #include <string>
 #include <eigen3/Eigen/Dense>
+#include "NeuronRepresentation/Segment.h"
+
 namespace skelgenerator {
 
     typedef struct {
-        int s1, p1, s2, p2, index; //primer segmento(encontro la conexion), punto concreto donde se conecta ,segundo segmento,punto donde conectara el segundo segmento,punto donde conecta con el primer segmento
+        Segment * segment1;
+        int  p1;
+        Segment * segment2;
+        int p2 /*,index*/;
+        //primer segmento(encontro la conexion), punto concreto donde se conecta ,segundo segmento,punto donde conectara el segundo segmento,punto donde conecta con el primer segmento
     } TConn;
 
     typedef struct {
-        int seg, initPoint, idx;
+        Segment segment;
+        int initPoint, idx;
     } TSegToProcess;
 
     typedef struct {

@@ -7,15 +7,24 @@
 
 #include "Segment.h"
 #include "SubDendrite.h"
+#include <ostream>
 
 namespace skelgenerator {
     class SubDendrite {
-        Segment segment;
+        Segment * segment;
         SubDendrite* ramification1;
         SubDendrite* ramification2;
 
     public:
-        friend std::ostream &operator<<(std::ostream &Str, const SubDendrite& dendrite);
+        SubDendrite(Segment* segment);
+
+
+        void setRamification1(SubDendrite *ramification1);
+
+        void setRamification2(SubDendrite *ramification2);
+
+        std::string to_asc(std::string tab);
+
     };
 }
 

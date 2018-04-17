@@ -1,15 +1,28 @@
 #include "MainWindow.h"
 #include "VRMLReader.h"
+#include "NeuronRepresentation/Neuron.h"
 #include <QApplication>
+#include <iostream>
 
 
 using  namespace skelgenerator;
 
     int main(int argc, char *argv[]) {
 
-        VRMLReader reader;
-        auto api = reader.readVrmlApical("api.wrl");
-        auto ba =reader.readBasalFile("basal.wrl");
+        std::vector<std::string> basal = {"basal.wrl"};
+        std::string apiFile = {"api.wrl"};
+
+
+        Neuron neuron(apiFile,basal);
+
+        std::ofstream skelFile;
+        skelFile.open("test.asc",std::ios::out);
+
+        skelFile << neuron.to_asc();
+        skelFile.close();
+
+
+
         /*QApplication a(argc, argv);
         MainWindow w;
         w.show();

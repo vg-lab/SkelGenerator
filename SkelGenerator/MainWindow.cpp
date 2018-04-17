@@ -6,8 +6,8 @@
 #include <QInputDialog>
 #include <QMetaObject>
 #include <QtConcurrent/QtConcurrent>
-#include "imarisSkel.cpp"
 #include <cstring>
+#include <iostream>
 
 namespace skelgenerator {
     MainWindow::MainWindow(QWidget *parent) :
@@ -150,7 +150,7 @@ namespace skelgenerator {
         swcFile.append(".swc");
         int newThreshold = connectionThreshold;
         int sobrantes = 1000;
-        sobrantes = processSkel(api, basals, swcFile, newThreshold);
+       // sobrantes = processSkel(api, basals, swcFile, newThreshold);
         while (sobrantes > 0 && !ignore) {
             QMetaObject::invokeMethod(this, "showWarningDialog", Qt::BlockingQueuedConnection,
                                       Q_ARG(int, sobrantes),
@@ -160,7 +160,7 @@ namespace skelgenerator {
 
             ignore = newThreshold < 0;
             if (!ignore) {
-                sobrantes = processSkel(api, basals, swcFile, newThreshold);
+          //      sobrantes = processSkel(api, basals, swcFile, newThreshold);
             }
 
         }
@@ -227,7 +227,7 @@ namespace skelgenerator {
     void MainWindow::proccesMultiple(std::string srcFolder, std::string dstFolder, QString outFormat,
                                      float connectionTreshold) {
         QThreadPool pool;
-        cout << "----------Number Threads: " << QThread::idealThreadCount() * 2 << " -------------" << std::flush;
+        std::cout << "----------Number Threads: " << QThread::idealThreadCount() * 2 << " -------------" << std::flush;
         logFile.open(dstFolder + "/log.txt", std::ios::out);
         pool.setMaxThreadCount(QThread::idealThreadCount() * 2);
         QString QsrcFolder = QString::fromStdString(srcFolder);
