@@ -23,7 +23,7 @@ namespace skelgenerator {
         ss << tab << " (\t(Color " << color << ")" << std::endl;
         ss << tab << "(" << type << ")" << std::endl;
         ss << this->dendrite->to_asc(tab);
-        ss << tab << ") ; End of Tree";
+        ss << tab << ") ; End of Tree" << std::endl;
         return ss.str();
     }
 }

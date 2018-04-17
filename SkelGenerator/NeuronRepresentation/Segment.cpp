@@ -43,6 +43,9 @@ namespace skelgenerator {
     std::string Segment::to_asc(std::string tab) {
         std::stringstream ss;
         int i =1 ;
+        if (this->size() == 0) {
+            ss << tab  << "Empty Segment: " << this->name;
+        }
         for (const SamplePoint &point:this->points) {
             ss << point.to_asc(tab) <<";  " << i << std::endl;
             i++;
