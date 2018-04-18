@@ -46,6 +46,7 @@ namespace skelgenerator {
         if (this->size() == 0) {
             ss << tab  << "Empty Segment: " << this->name;
         }
+        ss << tab << "; " << this->name << std::endl;
         for (const SamplePoint &point:this->points) {
             ss << point.to_asc(tab) <<";  " << i << std::endl;
             i++;
@@ -63,6 +64,15 @@ namespace skelgenerator {
             resultSegment->points.push_back(point);
         }
         return resultSegment;
+    }
+
+    void Segment::reverse() {
+        std::reverse(this->points.begin(),this->points.end());
+    }
+
+    void Segment::trim(int i) {
+        this->points.erase(this->points.begin(),this->points.begin()+i);
+
     }
 }
 

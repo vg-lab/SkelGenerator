@@ -9,8 +9,8 @@ using  namespace skelgenerator;
 
     int main(int argc, char *argv[]) {
 
-        std::vector<std::string> basal = {"basal.wrl"};
-        std::string apiFile = {"api.wrl"};
+        std::vector<std::string> basal = {"basal2.vrml"};
+        std::string apiFile = {"api2.vrml"};
 
 
         Neuron neuron(apiFile,basal);

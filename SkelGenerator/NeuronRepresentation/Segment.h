@@ -34,6 +34,9 @@ namespace skelgenerator {
         static Segment * unionSegment(Segment * segment1, Segment *segment2);
 
 
+        void reverse();
+
+        void trim(int i);
     };
 
 }

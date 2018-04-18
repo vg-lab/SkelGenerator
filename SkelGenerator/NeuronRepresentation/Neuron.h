@@ -27,7 +27,7 @@ namespace skelgenerator {
 
         Segment * getSegment(const TSegment &segment);
 
-        SubDendrite* computeSubDendrite(Segment* segment, std::set<Segment*>& reamingSegments);
+        SubDendrite* computeSubDendrite(Segment* segment, int initPoint,std::set<Segment*>& reamingSegments);
 
 
         SubDendrite * computeDendrite(std::vector<Segment *> segments);

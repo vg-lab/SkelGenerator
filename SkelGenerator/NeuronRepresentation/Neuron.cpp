@@ -35,13 +35,13 @@ namespace skelgenerator {
         apiDendriteSkel.setDendrite(computeDendrite(apiSegments));
         apiDendriteSkel.setDendtype(APICAL);
         this->apical = apiDendriteSkel;
-
+/*
         for (const auto &basalSegments: basalsSegments) {
             Dendrite basalDend;
             basalDend.setDendtype(BASAL);
             basalDend.setDendrite(computeDendrite(basalSegments));
             this->basals.push_back(basalDend);
-        }
+        } */
 
 
     }
@@ -78,11 +78,11 @@ namespace skelgenerator {
             reaminSegments.insert(segments[i]);
         }
 
-        return computeSubDendrite(segments[0], reaminSegments);
+        return computeSubDendrite(segments[0],0, reaminSegments);
 
     }
 
-    SubDendrite *Neuron::computeSubDendrite(Segment *segment, std::set<Segment *>& reamingSegments) {
+    SubDendrite *Neuron::computeSubDendrite(Segment *segment,int initPoint, std::set<Segment *>& reamingSegments) {
         std::cout << "Processing segment: " << segment->getName() << "\n" << std::flush;
         reamingSegments.erase(segment);
         std::vector<TConn> conns;
@@ -108,20 +108,40 @@ namespace skelgenerator {
             }
         }
 
+        //Le damos la vuelta a segmentos al reves
+        if (initPoint > segment->size() / 2) {
+            std::cout << "Rama del reves" << std::endl;
+            segment->reverse();
+
+            initPoint = (segment->size() - initPoint);
+            for (auto &conn : conns) {
+                conn.p1 = (segment->size() - conn.p1);
+            }
+        }
+
+       segment->trim(initPoint);
+        for (auto& conn :conns) {
+            conn.p1 -= initPoint;
+        }
+
         if (conns.empty()) {
             return new SubDendrite(segment);
         } else {
+
+            if (segment->getName() == "FilamentSegment600000010") {
+                std::cout << "Encontrado";
+            }
             if (conns.size() == 2) { //Seccion perfecta con 2 ramificaciones
-                std::cout << "Seccion" << std::endl;
                 auto con1 = conns[0];
                 auto con2 = conns[1];
                 int dist = abs(con1.p1 - con2.p1);
                 if (dist < 2 && (con1.p1 == segment->size() - 1 || con2.p1 == segment->size() - 1)) {
+                    std::cout << "Seccion" << std::endl;
                     auto subDendrite = new SubDendrite(segment);
                     reamingSegments.erase(con1.segment2);
                     reamingSegments.erase(con2.segment2);
-                    subDendrite->setRamification1(computeSubDendrite(con1.segment2, reamingSegments));
-                    subDendrite->setRamification2(computeSubDendrite(con2.segment2, reamingSegments));
+                    subDendrite->setRamification1(computeSubDendrite(con1.segment2,con1.p2, reamingSegments));
+                    subDendrite->setRamification2(computeSubDendrite(con2.segment2,con2.p2, reamingSegments));
                     return subDendrite;
                 }
             }
@@ -137,26 +157,55 @@ namespace skelgenerator {
             }
 
 
-            if (conns.size() == 1) { // Si solo tiene una conexion se unen el segmento actual con el encontrado
+            if (conns.size() == 1 && (conns[0].p1 == segment->size() -1 || conns[0].p1 == 0)) { // Si solo tiene una conexion se unen el segmento actual con el encontrado
                 auto con = conns[0];
                 std::cout << "Segmento suelto " << con.p1 << " = " << segment->size()-1 << std::endl;
-                auto unionSegment = Segment::unionSegment(segment, con.segment2);
                 reamingSegments.erase(segment);
                 reamingSegments.erase(con.segment2);
-                auto sub = computeSubDendrite(unionSegment, reamingSegments);
-                return sub;
+                if (con.p1 == 0) {
+                    auto unionSegment = Segment::unionSegment(con.segment2,segment);
+                    return computeSubDendrite(unionSegment,con.p2, reamingSegments);
+                } else {
+                    auto unionSegment = Segment::unionSegment(segment, con.segment2);
+                    return computeSubDendrite(unionSegment,initPoint, reamingSegments);
+                }
             }
 
+            std::vector<TConn> connsInSamePoint;
+            connsInSamePoint.push_back(*firstCoon);
 
+            for( auto& con : conns) {
+                if (&con != firstCoon) {
+                    if (con.p1 == firstCoon->p1){
+                        connsInSamePoint.push_back(con);
+                    }
+                }
+            }
+
+            if (connsInSamePoint.size() > 1) {
+                std::cout << "more than 1 conection in one point :"<< connsInSamePoint.size() <<std::endl;
+
+                auto segmentSplit = segment->split(firstCoon->p1- static_cast<int>(connsInSamePoint.size()));
+                auto segment1 = std::get<0>(segmentSplit);
+                auto segment2 = std::get<1>(segmentSplit);
+
+                reamingSegments.erase(firstCoon->segment2);
+                auto subDendrite = new SubDendrite(segment1);
+                subDendrite->setRamification1(computeSubDendrite(segment2,0, reamingSegments));
+                subDendrite->setRamification2(computeSubDendrite(firstCoon->segment2,firstCoon->p2, reamingSegments));
+                return subDendrite;
+            }
 
             auto segmentSplit = segment->split(firstCoon->p1);
             auto segment1 = std::get<0>(segmentSplit);
             auto segment2 = std::get<1>(segmentSplit);
 
+
+
             reamingSegments.erase(firstCoon->segment2);
             auto subDendrite = new SubDendrite(segment1);
-            subDendrite->setRamification1(computeSubDendrite(segment2, reamingSegments));
-            subDendrite->setRamification2(computeSubDendrite(firstCoon->segment2, reamingSegments));
+            subDendrite->setRamification1(computeSubDendrite(segment2,0, reamingSegments));
+            subDendrite->setRamification2(computeSubDendrite(firstCoon->segment2,firstCoon->p2, reamingSegments));
             return subDendrite;
 
         }
