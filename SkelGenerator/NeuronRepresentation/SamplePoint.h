@@ -23,7 +23,7 @@ namespace skelgenerator {
 
         float getRadius() const;
 
-        std::string to_asc(std::string tab )const;
+        virtual std::string to_asc(std::string tab ) const;
     };
 }
 

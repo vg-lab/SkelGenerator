@@ -14,7 +14,7 @@ namespace skelgenerator {
 
     }
 
-    void Section::addPoint(SamplePoint &samplePoint) {
+    void Section::addPoint(SamplePoint* &samplePoint) {
         this->points.push_back(samplePoint);
     }
 
@@ -47,8 +47,8 @@ namespace skelgenerator {
             ss << tab  << "Empty Section: " << this->name;
         }
         ss << tab << "; " << this->name << std::endl;
-        for (const SamplePoint &point:this->points) {
-            ss << point.to_asc(tab) <<";  " << i << std::endl;
+        for (const auto &point:this->points) {
+            ss << point->to_asc(tab) <<";  " << i << std::endl;
             i++;
         }
         return ss.str();
@@ -72,6 +72,12 @@ namespace skelgenerator {
 
     void Section::trim(int i) {
         this->points.erase(this->points.begin(),this->points.begin()+i);
+
+    }
+
+    void Section::addPoint(Eigen::Vector3f point, float radius) {
+        auto p = new SamplePoint(point,radius);
+        points.push_back(p);
 
     }
 }

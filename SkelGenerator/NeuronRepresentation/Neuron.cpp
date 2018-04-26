@@ -50,8 +50,7 @@ namespace skelgenerator {
             }
             medio = medio/17;
             float radius = (medio - fragment.points[cir * 17 + 1]).norm();
-            SamplePoint samplePoint(medio, radius);
-            sectionSkel->addPoint(samplePoint);
+            sectionSkel->addPoint(medio,radius);
         }
         return sectionSkel;
     }
@@ -77,7 +76,7 @@ namespace skelgenerator {
             int minPoint2 = 0;
             for (int i = 0; i < fragment->size(); i++) {
                 for (int j = 0; j < anotherFragment->size(); j++) {
-                    float dist = ((*fragment)[i].getPoint() - (*anotherFragment)[j].getPoint()).norm();
+                    float dist = ((*fragment)[i]->getPoint() - (*anotherFragment)[j]->getPoint()).norm();
 
                     if (dist < minDistance) {
                         minDistance = dist;

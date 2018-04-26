@@ -12,18 +12,18 @@
 namespace skelgenerator {
 
     class Section {
-        std::vector<SamplePoint> points;
+        std::vector<SamplePoint*> points;
         std::string name;
 
     public:
         Section() = default;
         Section(const std::string& name);
-        void addPoint(SamplePoint& samplePoint);
+        void addPoint(SamplePoint*& samplePoint);
         int size();
 
-        SamplePoint& operator[] (std::size_t idx) { return points[idx];}
+        SamplePoint*& operator[] (std::size_t idx) { return points[idx];}
 
-        const SamplePoint& operator[] (std::size_t idx) const { return points[idx];}
+        const SamplePoint* operator[] (std::size_t idx) const { return points[idx];}
 
         std::tuple<Section *,Section *> split(int i);
 
@@ -37,6 +37,8 @@ namespace skelgenerator {
         void reverse();
 
         void trim(int i);
+
+        void addPoint(Eigen::Matrix<float, 3, 1> point, float radius);
     };
 
 }
