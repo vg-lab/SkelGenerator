@@ -3,48 +3,48 @@
 //
 
 #include <iostream>
-#include "Segment.h"
+#include "Section.h"
 
 
 namespace skelgenerator {
 
 
-    Segment::Segment(const std::string &name) {
+    Section::Section(const std::string &name) {
         this->name = name;
 
     }
 
-    void Segment::addPoint(SamplePoint &samplePoint) {
+    void Section::addPoint(SamplePoint &samplePoint) {
         this->points.push_back(samplePoint);
     }
 
-    int Segment::size() {
+    int Section::size() {
         return static_cast<int>(points.size());
     }
 
-    std::tuple<Segment *, Segment *> Segment::split(int point) {
-        auto segment1 = new Segment(this->name + "-1");
-        auto segment2 = new Segment(this->name + "-2");
-        for (int i = 0; i <= point; i++) {
+    std::tuple<Section *, Section *> Section::split(int point) {
+        auto segment1 = new Section(this->name + "-1");
+        auto segment2 = new Section(this->name + "-2");
+        for (int i = 0; i < point; i++) {
             segment1->addPoint(points[i]);
         }
 
-        for (int i = point + 1; i < this->size(); i++) {
+        for (int i = point; i < this->size(); i++) {
             segment2->addPoint(points[i]);
         }
 
         return std::make_tuple(segment1, segment2);
     }
 
-    const std::string &Segment::getName() const {
+    const std::string &Section::getName() const {
         return name;
     }
 
-    std::string Segment::to_asc(std::string tab) {
+    std::string Section::to_asc(std::string tab) {
         std::stringstream ss;
         int i =1 ;
         if (this->size() == 0) {
-            ss << tab  << "Empty Segment: " << this->name;
+            ss << tab  << "Empty Section: " << this->name;
         }
         ss << tab << "; " << this->name << std::endl;
         for (const SamplePoint &point:this->points) {
@@ -54,23 +54,23 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    Segment *Segment::unionSegment(Segment *segment1, Segment* segment2) {
-        auto resultSegment = new Segment(segment1->getName() + "+" +  segment2->getName());
-        for (const auto &point :segment1->points) {
+    Section *Section::unionSection(Section *section1, Section *section2) {
+        auto resultSegment = new Section(section1->getName() + "+" +  section2->getName());
+        for (const auto &point :section1->points) {
             resultSegment->points.push_back(point);
         }
 
-        for (const auto &point :segment2->points) {
+        for (const auto &point :section2->points) {
             resultSegment->points.push_back(point);
         }
         return resultSegment;
     }
 
-    void Segment::reverse() {
+    void Section::reverse() {
         std::reverse(this->points.begin(),this->points.end());
     }
 
-    void Segment::trim(int i) {
+    void Section::trim(int i) {
         this->points.erase(this->points.begin(),this->points.begin()+i);
 
     }

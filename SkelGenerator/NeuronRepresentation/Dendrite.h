@@ -8,7 +8,7 @@
 
 #include <vector>
 #include "SamplePoint.h"
-#include "Segment.h"
+#include "Section.h"
 #include "SubDendrite.h"
 
 

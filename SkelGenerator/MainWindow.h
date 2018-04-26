@@ -50,11 +50,8 @@ namespace skelgenerator {
         void procesSkel(std::string api, std::vector <std::string> basals, std::string outputFile, QString outputFormat,
                         int connectionThreshold, std::string name);
 
-    private
-        slots:
-                void
-        open_one_dialog(QLineEdit
-        & target);
+    private slots:
+        void open_one_dialog(QLineEdit & target);
 
         void save_dialog(QLineEdit &target, std::string filter);
 

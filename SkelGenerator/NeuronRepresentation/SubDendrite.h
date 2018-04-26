@@ -5,18 +5,18 @@
 #ifndef SKELGENERATOR_SUBDENDRITE_H
 #define SKELGENERATOR_SUBDENDRITE_H
 
-#include "Segment.h"
+#include "Section.h"
 #include "SubDendrite.h"
 #include <ostream>
 
 namespace skelgenerator {
     class SubDendrite {
-        Segment * segment;
+        Section * sec;
         SubDendrite* ramification1;
         SubDendrite* ramification2;
 
     public:
-        SubDendrite(Segment* segment);
+        SubDendrite(Section* section);
 
 
         void setRamification1(SubDendrite *ramification1);

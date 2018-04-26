@@ -14,11 +14,11 @@ namespace skelgenerator {
         static const int POINTS_PER_CIRCLE = 17;
 
     public:
-        static TDendrite readVrmlApical(std::string apiFile);
-        static std::vector<TDendrite> readBasalFile(std::string basalFile);
+        static TDendrite readVrmlApical(const std::string& apiFile);
+        static std::vector<TDendrite> readBasalFile(const std::string& basalFile);
 
     private:
-        static TSegment parseFilament(const std::string &name, std::ifstream &file);
+        static TFragment parseFilament(const std::string &name, std::ifstream &file);
 
         static TSpine parseSpine(const std::string &name, std::ifstream &file);
     };

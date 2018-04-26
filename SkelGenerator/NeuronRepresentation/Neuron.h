@@ -11,9 +11,13 @@
 #include "../Types.h"
 
 namespace skelgenerator {
+    /** Internally the class have Fragments in Section class until the skeleton is finished procesing.
+     *  Once the skeleton is processed it only contains sections.
+    **/
+
     class Neuron {
         std::vector<SamplePoint> soma;
-        Dendrite apical;
+        Dendrite* apical;
         std::vector<Dendrite> basals;
         float connectionThreshold;
 
@@ -23,16 +27,17 @@ namespace skelgenerator {
         std::string to_asc();
 
     private:
-        std::vector<Segment *> generateSegments(TDendrite dendrite);
+        std::vector<Section *> generateFragments(TDendrite dendrite);
 
-        Segment * getSegment(const TSegment &segment);
+        Section * getFragment(const TFragment &fragment);
 
-        SubDendrite* computeSubDendrite(Segment* segment, int initPoint,std::set<Segment*>& reamingSegments);
-
-
-        SubDendrite * computeDendrite(std::vector<Segment *> segments);
+        SubDendrite* computeSubDendrite(Section* fragment, int initPoint,std::set<Section*>& reamingFragments);
 
 
+        SubDendrite * computeDendrite(std::vector<Section *> fragments);
+
+
+        void procesSkel(const std::string& apifile, const std::vector<std::string>& basalFiles);
     };
 }
 

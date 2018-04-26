@@ -23,7 +23,7 @@ set( SKELGENERATOR_SOURCES
         NeuronRepresentation/Neuron.cpp
         NeuronRepresentation/SamplePoint.cpp
         NeuronRepresentation/Dendrite.cpp
-        NeuronRepresentation/Segment.cpp
+        NeuronRepresentation/Section.cpp
         NeuronRepresentation/SubDendrite.cpp
         NeuronRepresentation/Spine.cpp
         VRMLReader.cpp
@@ -38,7 +38,7 @@ set( SKELGENERATOR_HEADERS
         NeuronRepresentation/Neuron.h
         NeuronRepresentation/SamplePoint.h
         NeuronRepresentation/Dendrite.h
-        NeuronRepresentation/Segment.h
+        NeuronRepresentation/Section.h
         NeuronRepresentation/SubDendrite.h
         NeuronRepresentation/Spine.h
         VRMLReader.h

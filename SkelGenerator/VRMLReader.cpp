@@ -7,8 +7,8 @@
 #include "Types.h"
 namespace skelgenerator {
 
-   TSegment VRMLReader::parseFilament(const std::string &name, std::ifstream &file) {
-        TSegment segment;
+   TFragment VRMLReader::parseFilament(const std::string &name, std::ifstream &file) {
+        TFragment segment;
         std::string line;
         std::vector<Eigen::Vector3f> points;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
@@ -79,7 +79,7 @@ namespace skelgenerator {
 
 
 
-    TDendrite VRMLReader::readVrmlApical(std::string apiFile) {
+    TDendrite VRMLReader::readVrmlApical(const std::string& apiFile) {
         TDendrite dendrite = TDendrite();
         std::string line;
         std::ifstream file(apiFile);
@@ -91,7 +91,7 @@ namespace skelgenerator {
 
         while (file >> line) {
             if (line.find("FilamentSegment6") != std::string::npos) {
-                dendrite.segments.push_back(parseFilament(line, file));
+                dendrite.fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
                 dendrite.spines.push_back(parseSpine(line,file));
             }
@@ -99,7 +99,7 @@ namespace skelgenerator {
         return dendrite;
     }
 
-    std::vector<skelgenerator::TDendrite> VRMLReader::readBasalFile(std::string basalFile) {
+    std::vector<skelgenerator::TDendrite> VRMLReader::readBasalFile(const std::string& basalFile) {
         std::vector<TDendrite> dendrites;
         std::string line;
         std::ifstream file(basalFile);
@@ -117,7 +117,7 @@ namespace skelgenerator {
                     dendrites.emplace_back();
                     index++;
                 }
-                dendrites[index].segments.push_back(parseFilament(line, file));
+                dendrites[index].fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
                 dendrites[index].spines.push_back(parseSpine(line,file));
             }

@@ -9,20 +9,20 @@
 #include <vector>
 #include <string>
 #include <eigen3/Eigen/Dense>
-#include "NeuronRepresentation/Segment.h"
+#include "NeuronRepresentation/Section.h"
 
 namespace skelgenerator {
 
     typedef struct {
-        Segment * segment1;
+        Section * fragment1;
         int  p1;
-        Segment * segment2;
+        Section * fragment2;
         int p2 /*,index*/;
         //primer segmento(encontro la conexion), punto concreto donde se conecta ,segundo segmento,punto donde conectara el segundo segmento,punto donde conecta con el primer segmento
     } TConn;
 
     typedef struct {
-        Segment segment;
+        Section fragment;
         int initPoint, idx;
     } TSegToProcess;
 
@@ -30,7 +30,7 @@ namespace skelgenerator {
         std::string nombre;
         std::vector <Eigen::Vector3f> points;
         unsigned int nCircles;
-    } TSegment;
+    } TFragment;
 
     typedef struct {
         std::string nombre;
@@ -39,7 +39,7 @@ namespace skelgenerator {
     } TSpine;
 
     typedef struct {
-        std::vector<TSegment> segments;
+        std::vector<TFragment> fragments;
         std::vector<TSpine> spines;
     } TDendrite;
 

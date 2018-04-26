@@ -2,8 +2,8 @@
 // Created by ivelascog on 13/04/18.
 //
 
-#ifndef SKELGENERATOR_SEGMENT_H
-#define SKELGENERATOR_SEGMENT_H
+#ifndef SKELGENERATOR_SECTION_H
+#define SKELGENERATOR_SECTION_H
 
 
 #include <vector>
@@ -11,13 +11,13 @@
 
 namespace skelgenerator {
 
-    class Segment {
+    class Section {
         std::vector<SamplePoint> points;
         std::string name;
 
     public:
-        Segment() = default;
-        Segment(const std::string& name);
+        Section() = default;
+        Section(const std::string& name);
         void addPoint(SamplePoint& samplePoint);
         int size();
 
@@ -25,13 +25,13 @@ namespace skelgenerator {
 
         const SamplePoint& operator[] (std::size_t idx) const { return points[idx];}
 
-        std::tuple<Segment *,Segment *> split(int i);
+        std::tuple<Section *,Section *> split(int i);
 
         const std::string &getName() const;
 
         std::string to_asc(std::string tab);
 
-        static Segment * unionSegment(Segment * segment1, Segment *segment2);
+        static Section * unionSection(Section *section1, Section *section2);
 
 
         void reverse();
@@ -42,4 +42,4 @@ namespace skelgenerator {
 }
 
 
-#endif //SKELGENERATOR_SEGMENT_H
+#endif //SKELGENERATOR_SECTION_H

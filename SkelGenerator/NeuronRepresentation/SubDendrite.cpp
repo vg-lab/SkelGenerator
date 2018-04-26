@@ -17,8 +17,8 @@ namespace skelgenerator{
             SubDendrite::ramification2 = ramification2;
     }
 
-    SubDendrite::SubDendrite(Segment* segment) {
-        this->segment = segment;
+    SubDendrite::SubDendrite(Section* section) {
+        this->sec = section;
         this->ramification1 = nullptr;
         this->ramification2 = nullptr;
 
@@ -27,7 +27,7 @@ namespace skelgenerator{
     std::string SubDendrite::to_asc(std::string tab) {
         std::stringstream ss;
         tab +="\t";
-        ss  << this->segment->to_asc(tab);
+        ss  << this->sec->to_asc(tab);
         if (this->ramification1 == nullptr && this->ramification2 == nullptr) {
             ss << tab << "Normal" <<std::endl;
        } else {
@@ -36,8 +36,6 @@ namespace skelgenerator{
             ss << tab << "|" << std::endl;
             ss << this->ramification2->to_asc(tab);
             ss << tab << ")  ; End of Split" << std::endl;
-
-
 
         }
         return ss.str();
