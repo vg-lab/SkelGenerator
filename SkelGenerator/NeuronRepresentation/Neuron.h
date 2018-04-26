@@ -37,7 +37,9 @@ namespace skelgenerator {
         SubDendrite * computeDendrite(std::vector<Section *> fragments);
 
 
-        void procesSkel(const std::string& apifile, const std::vector<std::string>& basalFiles);
+        void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);
+
+        void procesSpines(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
     };
 }
 

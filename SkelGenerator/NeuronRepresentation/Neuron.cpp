@@ -18,7 +18,16 @@ namespace skelgenerator {
     Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, int connectionThreshold) {
         this->connectionThreshold = connectionThreshold;
         this->apical = nullptr;
-        procesSkel(apiFile,basalFiles);
+
+        auto apiDendrite = VRMLReader::readVrmlApical(apiFile);
+
+        std::vector<TDendrite> basalDendrites;
+        for (const auto &basalFile : basalFiles) {
+            auto thisBasal = VRMLReader::readBasalFile(basalFile);
+            basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
+        }
+
+        procesSkel(apiDendrite,basalDendrites);
 
     }
 
@@ -209,14 +218,7 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    void Neuron::procesSkel(const std::string& apiFile,const std::vector<std::string>& basalFiles) {
-        auto apiDendrite = VRMLReader::readVrmlApical(apiFile);
-
-        std::vector<TDendrite> basalDendrites;
-        for (const auto &basalFile : basalFiles) {
-            auto thisBasal = VRMLReader::readBasalFile(basalFile);
-            basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
-        }
+    void Neuron::procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites) {
 
         auto apiFragments = generateFragments(apiDendrite);
         std::vector<std::vector<Section *>> basalsFragments;
@@ -235,6 +237,10 @@ namespace skelgenerator {
             basalDend.setDendrite(computeDendrite(basalFragments));
             this->basals.push_back(basalDend);
         }
+    }
+
+    void Neuron::procesSpines(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites) {
+
 
     }
 }
