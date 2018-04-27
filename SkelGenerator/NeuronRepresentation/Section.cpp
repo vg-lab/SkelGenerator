@@ -80,6 +80,11 @@ namespace skelgenerator {
         points.push_back(p);
 
     }
+
+    void Section::addPoint(Spine *&samplePoint, int pos) {
+        this->points.insert(this->points.begin() + pos, samplePoint);
+
+    }
 }
 
 

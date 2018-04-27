@@ -26,6 +26,10 @@ namespace skelgenerator {
         ss << tab << ") ; End of Tree" << std::endl;
         return ss.str();
     }
+
+    SubDendrite *Dendrite::getDendrite() const {
+        return dendrite;
+    }
 }
 
 

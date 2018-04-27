@@ -40,4 +40,16 @@ namespace skelgenerator{
         }
         return ss.str();
     }
+
+    Section *SubDendrite::getSec() const {
+        return sec;
+    }
+
+    SubDendrite *SubDendrite::getRamification1() const {
+        return ramification1;
+    }
+
+    SubDendrite *SubDendrite::getRamification2() const {
+        return ramification2;
+    }
 }

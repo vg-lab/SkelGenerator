@@ -9,6 +9,7 @@
 #include "SamplePoint.h"
 #include "Dendrite.h"
 #include "../Types.h"
+#include "Spine.h"
 
 namespace skelgenerator {
     /** Internally the class have Fragments in Section class until the skeleton is finished procesing.
@@ -39,7 +40,16 @@ namespace skelgenerator {
 
         void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);
 
-        void procesSpines(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+        void procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+
+        std::set<Spine *> generateSpines(const TDendrite &dendrite);
+
+        void addSpines(Dendrite *dendrite, std::set<Spine *> &spines);
+
+        void addSpine(SubDendrite *subDendrite, Spine *spine);
+
+        std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, Spine *spine);
+
     };
 }
 

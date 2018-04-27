@@ -13,19 +13,31 @@ namespace skelgenerator {
 
     class SamplePoint {
 
+    protected:
         Eigen::Vector3f point;
-        float r;
+        float r{-1};
 
     public:
         SamplePoint(Eigen::Vector3f &point, float r);
+
+        SamplePoint() = default;
 
         const Eigen::Vector3f &getPoint() const;
 
         float getRadius() const;
 
-        virtual std::string to_asc(std::string tab ) const;
+        virtual std::string to_asc(std::string tab) const;
     };
+
 }
+
+
+
+
+
+
+
+
 
 
 #endif //SKELGENERATOR_SAMPLEDATA_H

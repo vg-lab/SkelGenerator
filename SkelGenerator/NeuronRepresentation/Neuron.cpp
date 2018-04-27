@@ -6,6 +6,7 @@
 #include "../VRMLReader.h"
 #include "Section.h"
 #include "../Types.h"
+#include "Spine.h"
 #include <eigen3/Eigen/Dense>
 #include <stack>
 #include <set>
@@ -28,6 +29,7 @@ namespace skelgenerator {
         }
 
         procesSkel(apiDendrite,basalDendrites);
+        procesSpines(apiDendrite, basalDendrites);
 
     }
 
@@ -230,17 +232,100 @@ namespace skelgenerator {
         apiDendriteSkel->setDendtype(APICAL);
         this->apical = apiDendriteSkel;
 
-        for (const auto &basalFragments: basalsFragments) {
-            Dendrite basalDend;
-            basalDend.setDendtype(BASAL);
-            basalDend.setDendrite(computeDendrite(basalFragments));
-            this->basals.push_back(basalDend);
+        /*  for (const auto &basalFragments: basalsFragments) {
+              Dendrite basalDend;
+              basalDend.setDendtype(BASAL);
+              basalDend.setDendrite(computeDendrite(basalFragments));
+              this->basals.push_back(basalDend);
+          } */
+    }
+
+
+    void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
+        auto apiSpines = generateSpines(apiDendrite);
+
+        std::vector<std::set<Spine *>> basalsSpines;
+        for (const auto &basal:basalDendrites) {
+            std::cout << "-------------------------- Basal ------------------------" << std::endl;
+            basalsSpines.push_back(generateSpines(basal));
+        }
+
+        addSpines(apical, apiSpines);
+    }
+
+
+    std::set<Spine *> Neuron::generateSpines(const TDendrite &dendrite) {
+        std::set<Spine *> spines;
+        for (const auto &spine:dendrite.spines) {
+            auto spineSkel = new Spine(spine.nombre);
+            for (int cir = 0; cir < spine.nCircles; cir++) {
+                auto medio = Eigen::Vector3f(0, 0, 0);
+                for (int i = 0; i < 17; i++) {
+                    medio += spine.points[cir * 17 + i];
+                }
+                medio = medio / 17;
+                float radius = (medio - spine.points[cir * 17 + 1]).norm();
+                spineSkel->addPoint(medio, radius);
+            }
+            std::cout << spineSkel->getName() << std::endl;
+            spineSkel->calculatePoints();
+            spines.insert(spineSkel);
+        }
+
+        return spines;
+
+    }
+
+    void Neuron::addSpines(Dendrite *dendrite, std::set<Spine *> &spines) {
+        for (const auto &spine :spines) {
+            addSpine(dendrite->getDendrite(), spine);
+        }
+
+    }
+
+    void Neuron::addSpine(SubDendrite *subDendrite, Spine *spine) {
+        auto result = getPosSpine(subDendrite, spine);
+        auto sec = std::get<0>(result);
+        auto pos = std::get<1>(result);
+        auto min = std::get<2>(result);
+        std::cout << "min Dist = " << min << std::endl;
+        if (min < connectionThreshold) {
+            sec->addPoint(spine, pos);
+        } else {
+            std::cout << "Error al rpocesar espinas " << std::endl;
         }
     }
 
-    void Neuron::procesSpines(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites) {
+    std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, Spine *spine) {
+        const auto &insertPoint = spine->getInsertPoint();
+        auto sec = subDendrite->getSec();
+        float min = 1000.0f;
+        int mini = 0;
+        for (int i = 0; i < sec->size(); i++) {
+            float dist = (insertPoint - (*sec)[i]->getPoint()).norm();
 
+            if (dist < min) {
+                min = dist;
+                mini = i;
+            }
+        }
 
+        if (subDendrite->getRamification1() == nullptr && subDendrite->getRamification1() == nullptr) {
+            return std::make_tuple(sec, mini, min);
+        } else {
+            auto result1 = getPosSpine(subDendrite->getRamification1(), spine);
+            auto result2 = getPosSpine(subDendrite->getRamification2(), spine);
+            auto minDist1 = std::get<2>(result1);
+            auto minDist2 = std::get<2>(result2);
+
+            if (min <= minDist1 && min <= minDist2) {
+                return std::make_tuple(sec, mini, min);
+            } else if (minDist1 <= min && minDist1 <= minDist2) {
+                return result1;
+            } else if (minDist2 <= min && minDist2 <= minDist1) {
+                return result2;
+            }
+        }
     }
 }
 

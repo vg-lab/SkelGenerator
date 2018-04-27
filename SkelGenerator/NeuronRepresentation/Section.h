@@ -8,8 +8,12 @@
 
 #include <vector>
 #include "SamplePoint.h"
+#include "Spine.h"
 
 namespace skelgenerator {
+
+    typedef std::vector<SamplePoint *>::iterator iterator;
+    typedef std::vector<SamplePoint *>::const_iterator const_iterator;
 
     class Section {
         std::vector<SamplePoint*> points;
@@ -38,7 +42,17 @@ namespace skelgenerator {
 
         void trim(int i);
 
-        void addPoint(Eigen::Matrix<float, 3, 1> point, float radius);
+        void addPoint(Eigen::Vector3f point, float radius);
+
+        void addPoint(Spine *&samplePoint, int pos);
+
+        iterator begin() { return points.begin(); }
+
+        iterator end() { return points.end(); }
+
+        const_iterator begin() const { return points.begin(); }
+
+        const_iterator end() const { return points.end(); }
     };
 
 }

@@ -18,6 +18,12 @@ namespace skelgenerator {
     public:
         SubDendrite(Section* section);
 
+        Section *getSec() const;
+
+        SubDendrite *getRamification1() const;
+
+        SubDendrite *getRamification2() const;
+
 
         void setRamification1(SubDendrite *ramification1);
 

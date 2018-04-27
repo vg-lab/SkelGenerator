@@ -28,6 +28,8 @@ namespace skelgenerator {
 
         std::string to_asc(std::string tab);
 
+        SubDendrite *getDendrite() const;
+
 
     };
 }
