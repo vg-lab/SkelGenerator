@@ -6,6 +6,7 @@
 #define SKELGENERATOR_SPINE_H
 
 #include "SamplePoint.h"
+#include <unordered_set>
 
 namespace skelgenerator {
 
@@ -27,27 +28,34 @@ namespace skelgenerator {
 
         void calculatePoints();
 
-        std::string to_asc(std::string tab) const;
+        std::string to_asc(std::string tab) const override;
 
-        bool operator==(const Spine &spine) {
-            return insertPoint == spine.insertPoint;
-        }
     };
 
 
-}
+    struct SpinePtrComparator {
+        bool operator()(Spine *const &obj1, Spine *&obj2) const {
+            return obj1->getInsertPoint() == obj2->getInsertPoint();
+        }
+    };
 
-namespace std {
-    template<>
-    struct hash<skelgenerator::Spine *> {
-        size_t operator()(const skelgenerator::Spine *&obj) const {
-            auto result = 31 + hash<float>()(obj->getInsertPoint().x());
-            result *= 31 + hash<float>()(obj->getInsertPoint().y());
-            result *= 31 + hash<float>()(obj->getInsertPoint().z());
+    struct SpinePtrHasher {
+        size_t operator()(Spine *const &obj) const {
+            auto result = 31 + std::hash<float>()(obj->getInsertPoint().x());
+            result *= 31 + std::hash<float>()(obj->getInsertPoint().y());
+            result *= 31 + std::hash<float>()(obj->getInsertPoint().z());
             return result;
-        }
+        };
     };
+
+    using spineSet =  std::unordered_set<Spine *, SpinePtrHasher, SpinePtrComparator>;
+
+
 }
+
+
+
+
 
 
 #endif //SKELGENERATOR_SPINE_H

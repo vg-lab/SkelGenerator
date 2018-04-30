@@ -19,7 +19,7 @@ namespace skelgenerator {
     class Neuron {
         std::vector<SamplePoint> soma;
         Dendrite* apical;
-        std::vector<Dendrite> basals;
+        std::vector<Dendrite *> basals;
         float connectionThreshold;
 
     public:
@@ -42,9 +42,9 @@ namespace skelgenerator {
 
         void procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
 
-        std::set<Spine *> generateSpines(const TDendrite &dendrite);
+        spineSet generateSpines(const TDendrite &dendrite);
 
-        void addSpines(Dendrite *dendrite, std::set<Spine *> &spines);
+        void addSpines(Dendrite *dendrite, spineSet &spines);
 
         void addSpine(SubDendrite *subDendrite, Spine *spine);
 

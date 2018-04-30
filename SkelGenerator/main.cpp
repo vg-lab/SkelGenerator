@@ -9,14 +9,14 @@ using  namespace skelgenerator;
 
     int main(int argc, char *argv[]) {
 
-        std::vector<std::string> basal = {"basal2.vrml"};
-        std::string apiFile = {"api2.vrml"};
+        std::vector<std::string> basal = {"basal.wrl"};
+        std::string apiFile = {"api.wrl"};
 
 
         Neuron neuron(apiFile,basal);
 
         std::ofstream skelFile;
-        skelFile.open("test.asc",std::ios::out);
+        skelFile.open("neuron1.asc", std::ios::out);
 
         skelFile << neuron.to_asc();
         skelFile.close();
