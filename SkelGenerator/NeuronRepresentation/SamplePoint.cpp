@@ -30,4 +30,8 @@ namespace skelgenerator {
 
         return ss.str();
     }
+
+    bool SamplePoint::isSpine() {
+        return false;
+    }
 }

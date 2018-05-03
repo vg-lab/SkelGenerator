@@ -281,27 +281,21 @@ namespace skelgenerator {
 
     void Neuron::addSpines(Dendrite *dendrite, spineSet &spines) {
         std::vector<std::tuple<Spine *, Section *, int, float>> spinesToInsert;
-        for (const auto &spine :spines) {
+        for (auto spine :spines) {
             auto result = getPosSpine(dendrite->getDendrite(), spine);
             auto sec = std::get<0>(result);
             auto pos = std::get<1>(result);
             auto min = std::get<2>(result);
-            spinesToInsert.push_back(std::make_tuple(spine, sec, pos, min));
-        }
-
-        for (auto &spineToInsert :spinesToInsert) {
-            auto spine = std::get<0>(spineToInsert);
-            auto sec = std::get<1>(spineToInsert);
-            auto pos = std::get<2>(spineToInsert);
-            auto min = std::get<3>(spineToInsert);
             if (min < connectionThreshold) {
-                sec->addPoint(spine, pos);
+                if (pos == 0) {
+                    sec->addPoint(spine, 1);
+                } else {
+                    sec->addPoint(spine, pos);
+                }
             } else {
                 std::cout << "Error espina no conectada" << std::endl;
             }
         }
-
-        std::cout << "Espinas en VRML: " << spines.size() << "----" << spinesToInsert.size() << std::endl << std::flush;
     }
 
 
@@ -311,11 +305,14 @@ namespace skelgenerator {
         float min = 1000.0f;
         int mini = 0;
         for (int i = 0; i < sec->size(); i++) {
-            float dist = (insertPoint - (*sec)[i]->getPoint()).norm();
+            auto skelSample = (*sec)[i];
+            if (!skelSample->isSpine()) {
+                float dist = (insertPoint - (*sec)[i]->getPoint()).norm();
 
-            if (dist < min) {
-                min = dist;
-                mini = i;
+                if (dist < min) {
+                    min = dist;
+                    mini = i;
+                }
             }
         }
 

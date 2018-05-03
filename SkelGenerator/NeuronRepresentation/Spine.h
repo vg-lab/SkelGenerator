@@ -30,6 +30,8 @@ namespace skelgenerator {
 
         std::string to_asc(std::string tab) const override;
 
+        bool isSpine() override;
+
     };
 
 
