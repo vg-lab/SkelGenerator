@@ -17,6 +17,7 @@
 namespace skelgenerator {
 
     Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, int connectionThreshold) {
+        std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->connectionThreshold = connectionThreshold;
         this->apical = nullptr;
 
@@ -57,14 +58,16 @@ namespace skelgenerator {
         return sectionSkel;
     }
 
-    SubDendrite *Neuron::computeDendrite(std::vector<Section *> fragments) {
+    std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section *> fragments) {
         std::cout << "Parsing Skel\n" << std::flush;
         std::set<Section *> reaminFragments;
         for (int i = 0; i < fragments.size(); i++) {
             reaminFragments.insert(fragments[i]);
         }
 
-        return computeSubDendrite(fragments[0], 0, reaminFragments);
+        auto subDendrite = computeSubDendrite(fragments[0], 0, reaminFragments);
+
+        return std::make_tuple(subDendrite, reaminFragments.size());;
 
     }
 
@@ -114,9 +117,6 @@ namespace skelgenerator {
             return new SubDendrite(fragment);
         } else {
 
-            if (fragment->getName() == "FilamentSegment600000012") {
-                std::cout << "Encontrado";
-            }
             if (conns.size() == 2) { //Seccion perfecta con 2 ramificaciones
                 auto con1 = conns[0];
                 auto con2 = conns[1];
@@ -227,16 +227,23 @@ namespace skelgenerator {
         }
         auto apiDendriteSkel = new Dendrite();
 
-        apiDendriteSkel->setDendrite(computeDendrite(apiFragments));
+        auto resultApi = computeDendrite(apiFragments);
+        apiDendriteSkel->setDendrite(std::get<0>(resultApi));
         apiDendriteSkel->setDendtype(APICAL);
         this->apical = apiDendriteSkel;
 
+        int reamingFragments = std::get<1>(resultApi);
+        std::cout << reamingFragments << std::endl;
+
         for (const auto &basalFragments: basalsFragments) {
             auto basalDend = new Dendrite();
+            auto result = computeDendrite(basalFragments);
             basalDend->setDendtype(BASAL);
-            basalDend->setDendrite(computeDendrite(basalFragments));
+            basalDend->setDendrite(std::get<0>(result));
+            reamingFragments += std::get<1>(result);
             this->basals.push_back(basalDend);
         }
+        this->reamingSegments = reamingFragments;
     }
 
 
@@ -270,7 +277,6 @@ namespace skelgenerator {
                 float radius = (medio - spine.points[cir * 17 + 1]).norm();
                 spineSkel->addPoint(medio, radius);
             }
-            std::cout << spineSkel->getName() << std::endl;
             spineSkel->calculatePoints();
             spines.insert(spineSkel);
         }
@@ -332,6 +338,14 @@ namespace skelgenerator {
                 return result2;
             }
         }
+    }
+
+    int Neuron::getReamingSegments() const {
+        return reamingSegments;
+    }
+
+    int Neuron::getReamingSpines() const {
+        return reamingSpines;
     }
 }
 

@@ -21,11 +21,17 @@ namespace skelgenerator {
         Dendrite* apical;
         std::vector<Dendrite *> basals;
         float connectionThreshold;
+        int reamingSegments;
+        int reamingSpines;
 
     public:
         Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
 
         std::string to_asc();
+
+        int getReamingSegments() const;
+
+        int getReamingSpines() const;
 
     private:
         std::vector<Section *> generateFragments(TDendrite dendrite);
@@ -35,7 +41,7 @@ namespace skelgenerator {
         SubDendrite* computeSubDendrite(Section* fragment, int initPoint,std::set<Section*>& reamingFragments);
 
 
-        SubDendrite * computeDendrite(std::vector<Section *> fragments);
+        std::tuple<SubDendrite *, int> computeDendrite(std::vector<Section *> fragments);
 
 
         void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);

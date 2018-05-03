@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "messagebox.h"
 #include "ui_MainWindow.h"
+#include "NeuronRepresentation/Neuron.h"
 
 #include <QFileDialog>
 #include <QInputDialog>
@@ -82,7 +83,7 @@ namespace skelgenerator {
     }
 
     void MainWindow::showProgressDialog() {
-        procesingDialog = new QProgressDialog("Operation in progress", "Cancel", 0, 0);
+        procesingDialog = new QProgressDialog("Operation in progress", "Cancel", 0, 0, this);
         procesingDialog->setValue(0);
         procesingDialog->setCancelButton(0);
         procesingDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
@@ -94,7 +95,7 @@ namespace skelgenerator {
         MessageBox *msgBox;
 
         std::string msg;
-        if (neuronName != "") {
+        if (!neuronName.empty()) {
             msgBox = new MessageBox(30, true);
             msg = "The neuron \"" + neuronName + "\" has " + std::to_string(sobrantes) +
                   " segments that have not been connected and therefore will be ignored.";
@@ -144,13 +145,13 @@ namespace skelgenerator {
 
     void MainWindow::procesSkel(std::string api, std::vector <std::string> basals, std::string outputFile,
                                 QString outputFormat, int connectionThreshold, std::string name) {
-        outputFile = outputFile.substr(0, outputFile.find_last_of("."));
+        outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
         std::string swcFile = outputFile;
         bool ignore = false;
         swcFile.append(".swc");
         int newThreshold = connectionThreshold;
-        int sobrantes = 1000;
-       // sobrantes = processSkel(api, basals, swcFile, newThreshold);
+        Neuron neuron(api, basals, connectionThreshold);
+        int sobrantes = neuron.getReamingSegments();
         while (sobrantes > 0 && !ignore) {
             QMetaObject::invokeMethod(this, "showWarningDialog", Qt::BlockingQueuedConnection,
                                       Q_ARG(int, sobrantes),
@@ -160,11 +161,15 @@ namespace skelgenerator {
 
             ignore = newThreshold < 0;
             if (!ignore) {
-          //      sobrantes = processSkel(api, basals, swcFile, newThreshold);
+                Neuron neuron(api, basals, newThreshold);
+                sobrantes = neuron.getReamingSegments();
             }
 
         }
-        if (outputFormat != "SWC") {
+        std::ofstream file(outputFile, std::ios::out);
+        file << neuron.to_asc();
+
+        if (outputFormat != "NeurolucidaASC") {
             QProcess process;
             QStringList arguments;
             std::string extension = extensions.at(outputFormat.toStdString());
@@ -183,7 +188,7 @@ namespace skelgenerator {
             QString basalFiles = ui->one_basales_vrml_input->text();
             std::string api = ui->one_api_vrml_input->text().toStdString();
             std::string outputFile = ui->one_skel_swc_input->text().toStdString();
-            if (basalFiles == "" || outputFile == "") {
+            if (basalFiles == "" || outputFile.empty()) {
                 message_dialog("basal and output files are nedeed", QMessageBox::Warning);
             } else {
 
@@ -203,7 +208,7 @@ namespace skelgenerator {
         } else if (type == "many") {
             std::string srcFolder = ui->many_skel_input->text().toStdString();
             std::string dstFolder = ui->many_swc_input->text().toStdString();
-            if (srcFolder == "" || dstFolder == "") {
+            if (srcFolder.empty() || dstFolder.empty()) {
                 message_dialog("All dirs are nedeed", QMessageBox::Warning);
             } else {
 
