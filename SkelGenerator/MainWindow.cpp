@@ -41,7 +41,7 @@ namespace skelgenerator {
 
     void MainWindow::message_dialog(std::string msg, QMessageBox::Icon type) {
         QString QMsg = QString::fromStdString(msg);
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setText(QMsg);
         msgBox.setIcon(type);
         msgBox.exec();
@@ -96,11 +96,11 @@ namespace skelgenerator {
 
         std::string msg;
         if (!neuronName.empty()) {
-            msgBox = new MessageBox(30, true);
+            msgBox = new MessageBox(30, true,this);
             msg = "The neuron \"" + neuronName + "\" has " + std::to_string(sobrantes) +
                   " segments that have not been connected and therefore will be ignored.";
         } else {
-            msgBox = new MessageBox();
+            msgBox = new MessageBox(this);
             msg = "This neuron has " + std::to_string(sobrantes) +
                   " segments that have not been connected and therefore will be ignored.";
         }
@@ -146,9 +146,9 @@ namespace skelgenerator {
     void MainWindow::procesSkel(std::string api, std::vector <std::string> basals, std::string outputFile,
                                 QString outputFormat, int connectionThreshold, std::string name) {
         outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
-        std::string swcFile = outputFile;
+        std::string ascFile = outputFile;
         bool ignore = false;
-        swcFile.append(".swc");
+        ascFile.append(".asc");
         int newThreshold = connectionThreshold;
         Neuron neuron(api, basals, connectionThreshold);
         int sobrantes = neuron.getReamingSegments();
@@ -166,7 +166,7 @@ namespace skelgenerator {
             }
 
         }
-        std::ofstream file(outputFile, std::ios::out);
+        std::ofstream file(ascFile, std::ios::out);
         file << neuron.to_asc();
 
         if (outputFormat != "NeurolucidaASC") {
@@ -175,10 +175,10 @@ namespace skelgenerator {
             std::string extension = extensions.at(outputFormat.toStdString());
             std::string outFile2 = outputFile;
             outFile2.append(extension);
-            arguments << QString::fromStdString(swcFile) << QString::fromStdString(outFile2) << outputFormat;
+            arguments << QString::fromStdString(ascFile) << QString::fromStdString(outFile2) << outputFormat;
             process.start(program, arguments);
             process.waitForFinished();
-            std::remove(swcFile.c_str());
+            std::remove(ascFile.c_str());
         }
 
     }

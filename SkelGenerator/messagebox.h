@@ -11,15 +11,15 @@ namespace skelgenerator {
         std::string msg;
         bool autoClose;
     public:
-        MessageBox(int timeout, bool autoClose);
+        MessageBox(int timeout, bool autoClose,QWidget* parent = 0);
 
-        void showEvent(QShowEvent *event);
+        void showEvent(QShowEvent *event) override;
 
-        void timerEvent(QTimerEvent *event);
+        void timerEvent(QTimerEvent *event) override;
 
-        int exec();
+        int exec() override;
 
-        MessageBox();
+        explicit MessageBox(QWidget* parent = 0);
     };
 }
 

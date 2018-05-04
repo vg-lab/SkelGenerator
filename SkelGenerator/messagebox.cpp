@@ -3,12 +3,12 @@
 
 namespace skelgenerator {
 
-    MessageBox::MessageBox() {
+    MessageBox::MessageBox(QWidget* parent): QMessageBox(parent) {
         this->timeout = 0;
         this->autoClose = false;
     }
 
-    MessageBox::MessageBox(int timeout, bool autoClose) {
+    MessageBox::MessageBox(int timeout, bool autoClose,QWidget* parent): QMessageBox(parent) {
         this->timeout = timeout;
         this->autoClose = autoClose;
     }

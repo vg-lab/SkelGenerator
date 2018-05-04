@@ -30,7 +30,7 @@ namespace skelgenerator {
         }
 
         procesSkel(apiDendrite, basalDendrites);
-        procesSpines(apiDendrite, basalDendrites);
+       // procesSpines(apiDendrite, basalDendrites);
 
     }
 
@@ -81,7 +81,9 @@ namespace skelgenerator {
             int minPoint2 = 0;
             for (int i = 0; i < fragment->size(); i++) {
                 for (int j = 0; j < anotherFragment->size(); j++) {
-                    float dist = ((*fragment)[i]->getPoint() - (*anotherFragment)[j]->getPoint()).norm();
+                    auto p1 = (*fragment)[i]->getPoint();
+                    auto p2 = (*anotherFragment)[j]->getPoint();
+                    float dist = (p1-p2).norm();
 
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -92,6 +94,9 @@ namespace skelgenerator {
             }
 
             if (minDistance < connectionThreshold) {
+                if (fragment->getName() == "FilamentSegment600000013") {
+                    std::cout << "    ";
+                }
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
                 conns.push_back(conn);
             }
@@ -108,9 +113,16 @@ namespace skelgenerator {
             }
         }
 
+
         fragment->trim(initPoint);
-        for (auto &conn :conns) {
-            conn.p1 -= initPoint;
+        for (auto conn = conns.begin(); conn < conns.end(); conn++) {
+            conn->p1 -= initPoint;
+            /* Si alguna conexion es negativa indica que se ha realizado una mala conexion de segmentos anteriores por
+             * un connectionTreshold demasiado elevado, se opta por eliminar las conexiones problematicas y proseguir
+             * con una solucion , Notese que estas conexiones eliminadas pueden volver a ser conectadas por otros fragmentos*/
+            if (conn->p1 < 0) {
+                conns.erase(conn);
+            }
         }
 
         if (conns.empty()) {
@@ -179,7 +191,9 @@ namespace skelgenerator {
             if (connsInSamePoint.size() > 1) {
                 std::cout << "more than 1 conection in one point :" << connsInSamePoint.size() << std::endl;
 
-                auto segmentSplit = fragment->split(firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
+                int splitPoint = std::max(1,firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
+
+                auto segmentSplit = fragment->split(splitPoint);
                 auto segment1 = std::get<0>(segmentSplit);
                 auto segment2 = std::get<1>(segmentSplit);
 
