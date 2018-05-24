@@ -28,6 +28,7 @@ namespace skelgenerator {
         Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
 
         std::string to_asc();
+        void to_neuronize(std::ostream skel, std::ostream spines);
 
         int getReamingSegments() const;
 
@@ -38,6 +39,7 @@ namespace skelgenerator {
 
         Section * getFragment(const TFragment &fragment);
 
+
         SubDendrite* computeSubDendrite(Section* fragment, int initPoint,std::set<Section*>& reamingFragments);
 
 
@@ -46,13 +48,14 @@ namespace skelgenerator {
 
         void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);
 
+        void generateSoma();
+
         void procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
 
         spineSet generateSpines(const TDendrite &dendrite);
 
         void addSpines(Dendrite *dendrite, spineSet &spines);
 
-        void addSpine(SubDendrite *subDendrite, Spine *spine);
 
         std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, Spine *spine);
 

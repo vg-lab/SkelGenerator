@@ -68,6 +68,7 @@ namespace skelgenerator {
                         }
                     } else {
                         spine = {name, points, (unsigned int) points.size() / POINTS_PER_CIRCLE};
+                        std::cout << "Points:" << points.size() << std::endl;
                         break;
                     }
                 }

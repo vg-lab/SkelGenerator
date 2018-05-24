@@ -20,8 +20,10 @@ namespace skelgenerator {
         std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->connectionThreshold = connectionThreshold;
         this->apical = nullptr;
-
-        auto apiDendrite = VRMLReader::readVrmlApical(apiFile);
+        TDendrite apiDendrite = {};
+        if (!apiFile.empty()) {
+            apiDendrite = VRMLReader::readVrmlApical(apiFile);
+        }
 
         std::vector<TDendrite> basalDendrites;
         for (const auto &basalFile : basalFiles) {
@@ -30,7 +32,8 @@ namespace skelgenerator {
         }
 
         procesSkel(apiDendrite, basalDendrites);
-       // procesSpines(apiDendrite, basalDendrites);
+        generateSoma();
+        // procesSpines(apiDendrite, basalDendrites);
 
     }
 
@@ -83,7 +86,7 @@ namespace skelgenerator {
                 for (int j = 0; j < anotherFragment->size(); j++) {
                     auto p1 = (*fragment)[i]->getPoint();
                     auto p2 = (*anotherFragment)[j]->getPoint();
-                    float dist = (p1-p2).norm();
+                    float dist = (p1 - p2).norm();
 
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -191,7 +194,7 @@ namespace skelgenerator {
             if (connsInSamePoint.size() > 1) {
                 std::cout << "more than 1 conection in one point :" << connsInSamePoint.size() << std::endl;
 
-                int splitPoint = std::max(1,firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
+                int splitPoint = std::max(1, firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
 
                 auto segmentSplit = fragment->split(splitPoint);
                 auto segment1 = std::get<0>(segmentSplit);
@@ -223,7 +226,14 @@ namespace skelgenerator {
     std::string Neuron::to_asc() {
         std::string tab;
         std::stringstream ss;
+        ss << "(\"CellBody\"" << std::endl;
         tab += "\t";
+        ss << tab << "(Color RGB (255, 128, 64))" << std::endl;
+        ss << tab << "(CellBody)" << std::endl;
+        for (auto& point : soma) {
+            ss << point.to_asc(tab) << std::endl;
+        }
+        ss << ")" << std::endl;
         if (this->apical != nullptr)
             ss << this->apical->to_asc(tab);
         for (auto basal:this->basals) {
@@ -233,21 +243,24 @@ namespace skelgenerator {
     }
 
     void Neuron::procesSkel(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
+        int reamingFragments = 0;
+        if (!apiDendrite.fragments.empty()) {
+            auto apiFragments = generateFragments(apiDendrite);
+            auto apiDendriteSkel = new Dendrite();
 
-        auto apiFragments = generateFragments(apiDendrite);
+            auto resultApi = computeDendrite(apiFragments);
+            apiDendriteSkel->setDendrite(std::get<0>(resultApi));
+            apiDendriteSkel->setDendtype(APICAL);
+            this->apical = apiDendriteSkel;
+
+            reamingFragments += std::get<1>(resultApi);
+        }
+
         std::vector<std::vector<Section *>> basalsFragments;
         for (const auto &basalDedrite: basalDendrites) {
             basalsFragments.push_back(generateFragments(basalDedrite));
         }
-        auto apiDendriteSkel = new Dendrite();
 
-        auto resultApi = computeDendrite(apiFragments);
-        apiDendriteSkel->setDendrite(std::get<0>(resultApi));
-        apiDendriteSkel->setDendtype(APICAL);
-        this->apical = apiDendriteSkel;
-
-        int reamingFragments = std::get<1>(resultApi);
-        std::cout << reamingFragments << std::endl;
 
         for (const auto &basalFragments: basalsFragments) {
             auto basalDend = new Dendrite();
@@ -262,8 +275,10 @@ namespace skelgenerator {
 
 
     void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-        auto apiSpines = generateSpines(apiDendrite);
-        addSpines(apical, apiSpines);
+        if (apiDendrite.fragments.empty()) {
+            auto apiSpines = generateSpines(apiDendrite);
+            addSpines(apical, apiSpines);
+        }
 
         std::vector<spineSet> basalsSpines;
         for (const auto &basal:basalDendrites) {
@@ -361,7 +376,78 @@ namespace skelgenerator {
     int Neuron::getReamingSpines() const {
         return reamingSpines;
     }
+
+    void Neuron::generateSoma() {
+        Eigen::Vector3f somaBasal(0, 0, 0);
+
+
+        for (auto &basal: this->basals) {
+            auto sec = basal->getDendrite()->getSec();
+            somaBasal += (*sec)[0]->getPoint();
+        }
+
+        auto Zplane = 0;
+
+        auto somaRadius = 1000000;
+        Eigen::Vector3f somaCenter(0,0,0);
+
+        if (apical != nullptr) {
+            auto secApical = apical->getDendrite()->getSec();
+            Eigen::Vector3f somaApical = (*secApical)[0]->getPoint();
+            Zplane += somaApical[2];
+
+            somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
+
+            if ((somaApical - somaCenter).norm() < somaRadius) {
+                somaRadius = (somaApical - somaCenter).norm();
+            }
+
+        } else {
+            somaCenter = somaBasal / this->basals.size();
+        }
+
+        for (auto &basal:this->basals) {
+            Eigen::Vector3f firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
+            Zplane += firstPoint[2];
+            if ((firstPoint - somaCenter).norm() < somaRadius)
+                somaRadius = (firstPoint - somaCenter).norm();
+        }
+
+        if (apical != nullptr) {
+            Zplane /= 1 + this->basals.size();
+        } else {
+            Zplane /= this->basals.size();
+        }
+
+        auto centerX = somaCenter[0];
+        auto centerY = somaCenter[1];
+
+        for (int i = 0; i<360; i+=10) {
+            auto x = centerX + somaRadius * cos(i);
+            auto y = centerY + somaRadius * sin(i);
+            Eigen::Vector3f point (x,y,somaCenter[2]);
+            SamplePoint pointr(point,0.15f);
+            soma.push_back(pointr);
+        }
+
+
+
+
+
+
+
+
+
+    }
+
+    void Neuron::to_neuronize(std::ostream skel, std::ostream spines) {
+         skel <<
+
+    }
+
+
 }
+
 
 
 
