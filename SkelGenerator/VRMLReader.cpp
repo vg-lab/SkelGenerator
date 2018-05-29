@@ -5,9 +5,11 @@
 #include <fstream>
 #include "VRMLReader.h"
 #include "Types.h"
+#include "NeuronRepresentation/Spine.h"
+
 namespace skelgenerator {
 
-   TFragment VRMLReader::parseFilament(const std::string &name, std::ifstream &file) {
+    TFragment VRMLReader::parseFilament(const std::string &name, std::ifstream &file) {
         TFragment segment;
         std::string line;
         std::vector<Eigen::Vector3f> points;
@@ -43,7 +45,22 @@ namespace skelgenerator {
     }
 
     TSpine VRMLReader::parseSpine(const std::string &name, std::ifstream &file) {
+        std::string line;
         TSpine spine;
+        std::vector<TShape> shapes;
+        while (file >> line) {
+            if (line.find("DEF") != std::string::npos) {
+                break;
+            } else if (line.find("Shape") != std::string::npos) {
+                shapes.push_back(parseShape(file));
+            }
+        }
+        spine = {name, shapes};
+        return spine;
+    }
+
+    TShape VRMLReader::parseShape(std::ifstream &file) {
+        TShape shape;
         std::string line;
         std::vector<Eigen::Vector3f> points;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
@@ -67,16 +84,38 @@ namespace skelgenerator {
                             nCoords = 0;
                         }
                     } else {
-                        spine = {name, points, (unsigned int) points.size() / POINTS_PER_CIRCLE};
-                        std::cout << "Points:" << points.size() << std::endl;
                         break;
                     }
                 }
                 break;
             }
         }
-        return spine;
+
+        while (file >> line) {
+            if (line.find("coordIndex") != std::string::npos) {
+                file >> line; // ELiminamos el [ de la entrada
+                std::vector<std::vector<int>> faces;
+                std::vector<int> currentFace;
+                while (file >> line) {
+                    if (line.find(']') != std::string::npos) {
+                        shape = {points, (unsigned int) points.size() / POINTS_PER_CIRCLE, faces};
+                        break;
+
+                    } else if (line.find("-1") != std::string::npos) {
+                        faces.push_back(currentFace);
+                        currentFace.clear();
+                    } else {
+                        std::string coord = line.substr(0,line.size()-1);
+                        currentFace.push_back(std::stoi(coord));
+                    }
+                }
+                break;
+            }
+        }
+
+        return shape;
     }
+
 
 
 

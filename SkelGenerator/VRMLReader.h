@@ -21,6 +21,8 @@ namespace skelgenerator {
         static TFragment parseFilament(const std::string &name, std::ifstream &file);
 
         static TSpine parseSpine(const std::string &name, std::ifstream &file);
+
+        static TShape parseShape(std::ifstream &file);
     };
 }
 

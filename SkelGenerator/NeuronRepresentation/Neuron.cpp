@@ -12,6 +12,7 @@
 #include <set>
 #include <unordered_set>
 #include <iostream>
+#include <fstream>
 
 
 namespace skelgenerator {
@@ -33,7 +34,7 @@ namespace skelgenerator {
 
         procesSkel(apiDendrite, basalDendrites);
         generateSoma();
-        // procesSpines(apiDendrite, basalDendrites);
+        procesSpines(apiDendrite, basalDendrites);
 
     }
 
@@ -230,9 +231,20 @@ namespace skelgenerator {
         tab += "\t";
         ss << tab << "(Color RGB (255, 128, 64))" << std::endl;
         ss << tab << "(CellBody)" << std::endl;
-        for (auto& point : soma) {
-            ss << point.to_asc(tab) << std::endl;
+
+        //Calculamos los puntos de la rodaja 2D a partir del centro y del radio del soma
+
+        auto centerX = this->soma.getPoint()[0];
+        auto centerY = this->soma.getPoint()[1];
+
+        for (int i = 0; i<360; i+=10) {
+            auto x = centerX + this->soma.getRadius() * cos(i);
+            auto y = centerY + this->soma.getRadius() * sin(i);
+            Eigen::Vector3f point (x,y,this->soma.getPoint()[2]);
+            SamplePoint pointr(point,0.15f);
+            ss << pointr.to_asc(tab) << std::endl;
         }
+
         ss << ")" << std::endl;
         if (this->apical != nullptr)
             ss << this->apical->to_asc(tab);
@@ -277,13 +289,16 @@ namespace skelgenerator {
     void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         if (apiDendrite.fragments.empty()) {
             auto apiSpines = generateSpines(apiDendrite);
+            this->spines.insert(apiSpines.begin(),apiSpines.end());
             addSpines(apical, apiSpines);
         }
 
         std::vector<spineSet> basalsSpines;
         for (const auto &basal:basalDendrites) {
             std::cout << "-------------------------- Basal ------------------------" << std::endl;
-            basalsSpines.push_back(generateSpines(basal));
+            auto spineSet = generateSpines(basal);
+            this->spines.insert(spineSet.begin(),spineSet.end());
+            basalsSpines.push_back(spineSet);
         }
 
 
@@ -296,20 +311,9 @@ namespace skelgenerator {
     spineSet Neuron::generateSpines(const TDendrite &dendrite) {
         spineSet spines;
         for (const auto &spine:dendrite.spines) {
-            auto spineSkel = new Spine(spine.nombre);
-            for (int cir = 0; cir < spine.nCircles; cir++) {
-                auto medio = Eigen::Vector3f(0, 0, 0);
-                for (int i = 0; i < 17; i++) {
-                    medio += spine.points[cir * 17 + i];
-                }
-                medio = medio / 17;
-                float radius = (medio - spine.points[cir * 17 + 1]).norm();
-                spineSkel->addPoint(medio, radius);
-            }
-            spineSkel->calculatePoints();
+            auto spineSkel = new Spine(spine);
             spines.insert(spineSkel);
         }
-
         return spines;
 
     }
@@ -412,36 +416,29 @@ namespace skelgenerator {
             if ((firstPoint - somaCenter).norm() < somaRadius)
                 somaRadius = (firstPoint - somaCenter).norm();
         }
-
-        if (apical != nullptr) {
-            Zplane /= 1 + this->basals.size();
-        } else {
-            Zplane /= this->basals.size();
-        }
-
-        auto centerX = somaCenter[0];
-        auto centerY = somaCenter[1];
-
-        for (int i = 0; i<360; i+=10) {
-            auto x = centerX + somaRadius * cos(i);
-            auto y = centerY + somaRadius * sin(i);
-            Eigen::Vector3f point (x,y,somaCenter[2]);
-            SamplePoint pointr(point,0.15f);
-            soma.push_back(pointr);
-        }
-
-
-
-
-
-
-
+        this->soma = SamplePoint(somaCenter,somaRadius);
 
 
     }
 
-    void Neuron::to_neuronize(std::ostream skel, std::ostream spines) {
-         skel <<
+    std::tuple<std::string,std::string> Neuron::to_neuronize() {
+        int counter = 0;
+        std::stringstream ssSkel;
+        std::stringstream ssSpines;
+        ssSkel << std::get<0>(this->soma.to_neuronize(counter,-1,1)) << std::endl;
+        ssSkel << std::get<0>(this->apical->to_neuronice(counter));
+        for (const auto& basal: this->basals) {
+            ssSkel << std::get<0>(basal->to_neuronice(counter));
+        }
+        return std::make_tuple(ssSkel.str(),ssSpines.str());
+
+    }
+
+    void Neuron::spines_to_obj(std::string dirPath) {
+        int i = 0;
+        for (const auto& spine: this->spines){
+            spine->to_obj("");
+        }
 
     }
 

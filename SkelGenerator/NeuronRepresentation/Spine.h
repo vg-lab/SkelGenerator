@@ -8,17 +8,37 @@
 #include "SamplePoint.h"
 #include <unordered_set>
 
+
+
 namespace skelgenerator {
+
+
+    typedef struct {
+        std::vector <Eigen::Vector3f> points;
+        unsigned int nCircles;
+        std::vector<std::vector<int>> faces;
+    } TShape;
+
+    typedef struct {
+        std::string nombre;
+        std::vector<TShape> shapes;
+    } TSpine;
 
 
     class Spine : public SamplePoint {
         /** The attributes inherited from SamplePoint are the endpoint and its radius **/
         std::vector<SamplePoint> medialAxis;
         Eigen::Vector3f insertPoint;
-        std::string name;
+        TSpine spine3D;
+        unsigned int id;
+
+
 
     public:
-        explicit Spine(const std::string &name);
+
+        static int counter;
+
+        explicit Spine(TSpine spine3D);
 
         const Eigen::Vector3f &getInsertPoint() const;
 
@@ -31,6 +51,10 @@ namespace skelgenerator {
         std::string to_asc(std::string tab) const override;
 
         bool isSpine() override;
+
+        void to_obj(const std::string &path);
+
+        void shape_to_obj(const std::string &path,int shapeIndex);
 
     };
 

@@ -37,6 +37,8 @@ namespace skelgenerator {
 
         static Section * unionSection(Section *section1, Section *section2);
 
+        std::tuple<std::string,std::string> to_neuronice(int& counter,int parent,int type);
+
 
         void reverse();
 

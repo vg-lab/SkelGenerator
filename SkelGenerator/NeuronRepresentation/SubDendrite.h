@@ -31,6 +31,8 @@ namespace skelgenerator {
 
         std::string to_asc(std::string tab);
 
+        std::tuple<std::string,std::string> to_neuronice(int& counter,int parent,int type);
+
     };
 }
 

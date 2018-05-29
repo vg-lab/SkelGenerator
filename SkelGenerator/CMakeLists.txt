@@ -27,6 +27,7 @@ set( SKELGENERATOR_SOURCES
         NeuronRepresentation/SubDendrite.cpp
         NeuronRepresentation/Spine.cpp
         VRMLReader.cpp
+
         )
 
 set( SKELGENERATOR_HEADERS

@@ -85,6 +85,24 @@ namespace skelgenerator {
         this->points.insert(this->points.begin() + pos, samplePoint);
 
     }
+
+    std::tuple<std::string, std::string> Section::to_neuronice(int &counter, int parent, int type) {
+        std::stringstream ssSkel;
+        std::stringstream ssSpines;
+
+        ssSkel << std::get<0>(this->points[0]->to_neuronize(counter,parent,type)) << std::endl;
+
+        for (int i= 1; i< this->size(); i++){
+            auto point = this->points[i];
+            if (point->isSpine()) {
+                // TODO
+            } else {
+                ssSkel << std::get<0>(point->to_neuronize(counter,counter -1,type)) << std::endl;
+            }
+
+        }
+        return std::make_tuple(ssSkel.str(),"");
+    }
 }
 
 

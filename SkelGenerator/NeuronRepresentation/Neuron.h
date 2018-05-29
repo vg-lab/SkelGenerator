@@ -17,18 +17,20 @@ namespace skelgenerator {
     **/
 
     class Neuron {
-        std::vector<SamplePoint> soma;
+        SamplePoint soma;
         Dendrite* apical;
         std::vector<Dendrite *> basals;
         float connectionThreshold;
         int reamingSegments;
         int reamingSpines;
+        spineSet spines;
 
     public:
         Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
 
         std::string to_asc();
-        void to_neuronize(std::ostream skel, std::ostream spines);
+        std::tuple<std::string, std::string> to_neuronize();
+        void spines_to_obj(std::string dirPath);
 
         int getReamingSegments() const;
 

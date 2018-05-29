@@ -32,11 +32,6 @@ namespace skelgenerator {
         unsigned int nCircles;
     } TFragment;
 
-    typedef struct {
-        std::string nombre;
-        std::vector <Eigen::Vector3f> points;
-        unsigned int nCircles;
-    } TSpine;
 
     typedef struct {
         std::vector<TFragment> fragments;
