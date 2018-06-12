@@ -95,4 +95,27 @@ int Spine::counter = 0;
         }
 
     }
+
+    std::string Spine::to_swc(int &counter, int parent, int type) {
+        std::stringstream ss;
+        ss << "#Spin"<<std::endl;
+        ss << std::setprecision(10) << counter << " " << type << " "  << std::fixed <<this->medialAxis[0].getPoint()[0] <<
+           " " << this->medialAxis[0].getPoint()[1] << " " << this->medialAxis[0].getPoint()[2] << " " <<
+           this ->medialAxis[0].getRadius() << " " << parent << std::endl;
+        counter++;
+
+        for (int i=1; i < medialAxis.size();i++) {
+            auto samplePoint = this->medialAxis[i];
+            ss << std::setprecision(10) << counter << " " << type << " "  <<  std::fixed << samplePoint.getPoint()[0] <<
+               " " << samplePoint.getPoint()[1] << " " << samplePoint.getPoint()[2] << " " <<
+               samplePoint.getRadius() << " " << counter-1 << std::endl;
+            counter++;
+        }
+        ss << "#nd Spin"<<std::endl;
+
+
+        return ss.str();
+
+
+    }
 }

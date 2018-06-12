@@ -28,7 +28,7 @@ namespace skelgenerator {
 
         virtual std::string to_asc(std::string tab) const;
 
-        virtual std::tuple<std::string,std::string> to_neuronize(int& counter,int parent,int type);
+        virtual std::string to_swc(int &counter, int parent, int type);
 
         virtual bool isSpine();
     };

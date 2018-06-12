@@ -27,7 +27,7 @@ namespace skelgenerator {
 
     std::string SamplePoint::to_asc(std::string tab) const {
         std::stringstream ss;
-        ss << std::setprecision(10) <<tab <<"( "  << this->point[0] << "\t" << this->point[1] << "\t" << this->point[2] << "\t" << this -> r << " )";
+        ss << std::setprecision(10) <<tab <<"( "  <<this->point[0] << "\t" << this->point[1] << "\t" << this->point[2] << "\t" << this -> r << " )";
 
         return ss.str();
     }
@@ -36,10 +36,10 @@ namespace skelgenerator {
         return false;
     }
 
-    std::tuple<std::string, std::string> SamplePoint::to_neuronize(int& counter,int parent,int type) {
+    std::string SamplePoint::to_swc(int &counter, int parent, int type) {
         std::stringstream ss;
-        ss << std::setprecision(10) << counter << " " << type << " "  <<this->point[0] << " " << this->point[1] << " " << this->point[2] << " " << this -> r << " " << parent;
+        ss << std::setprecision(10) << counter << " " << type << " "  <<  std::fixed << this->point[0] << " " << this->point[1] << " " << this->point[2] << " " << this -> r << " " << parent;
         counter++;
-        return std::make_tuple(ss.str(),"");
+        return ss.str();
     }
 }

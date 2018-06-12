@@ -30,7 +30,7 @@ namespace skelgenerator {
 
         SubDendrite *getDendrite() const;
 
-        std::tuple<std::string,std::string> to_neuronice(int &counter);
+        std::string to_swc(int &counter, bool spines);
 
 
     };

@@ -86,22 +86,32 @@ namespace skelgenerator {
 
     }
 
-    std::tuple<std::string, std::string> Section::to_neuronice(int &counter, int parent, int type) {
+    std::string Section::to_swc(int &counter, int parent, int type,bool spines) {
         std::stringstream ssSkel;
-        std::stringstream ssSpines;
 
-        ssSkel << std::get<0>(this->points[0]->to_neuronize(counter,parent,type)) << std::endl;
+        ssSkel << this->points[0]->to_swc(counter, parent, type)<< std::endl;
+        int currentParent = counter -1;
+        bool postSpine = false;
 
         for (int i= 1; i< this->size(); i++){
             auto point = this->points[i];
             if (point->isSpine()) {
-                // TODO
-            } else {
-                ssSkel << std::get<0>(point->to_neuronize(counter,counter -1,type)) << std::endl;
-            }
+                if (spines) {
+                    ssSkel << point->to_swc(counter, currentParent + 1,type);
+                    postSpine = true;
 
+                }
+            } else {
+                if (!postSpine) {
+                    currentParent = counter - 1;
+                    ssSkel << point->to_swc(counter, currentParent, type) << std::endl;
+                } else {
+                    ssSkel << point->to_swc(counter, currentParent + 1, type) << std::endl;
+                    postSpine = false;
+                }
+            }
         }
-        return std::make_tuple(ssSkel.str(),"");
+        return ssSkel.str();
     }
 }
 

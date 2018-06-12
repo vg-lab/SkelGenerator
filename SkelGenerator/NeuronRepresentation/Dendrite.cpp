@@ -31,11 +31,9 @@ namespace skelgenerator {
         return dendrite;
     }
 
-    std::tuple<std::string, std::string> Dendrite::to_neuronice(int &counter) {
-        std::stringstream ssSkel;
-        std::stringstream ssSpines;
+    std::string Dendrite::to_swc(int &counter, bool spines) {
         int type = this->dendtype == APICAL ? 4:3;
-        return this->dendrite->to_neuronice(counter,0,type);
+        return this->dendrite->to_swc(counter, 0, type,spines);
     }
 }
 

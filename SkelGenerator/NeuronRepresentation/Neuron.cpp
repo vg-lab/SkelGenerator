@@ -287,7 +287,7 @@ namespace skelgenerator {
 
 
     void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-        if (apiDendrite.fragments.empty()) {
+        if (!apiDendrite.fragments.empty()) {
             auto apiSpines = generateSpines(apiDendrite);
             this->spines.insert(apiSpines.begin(),apiSpines.end());
             addSpines(apical, apiSpines);
@@ -421,16 +421,16 @@ namespace skelgenerator {
 
     }
 
-    std::tuple<std::string,std::string> Neuron::to_neuronize() {
+    std::string Neuron::to_swc(bool spines) {
         int counter = 0;
         std::stringstream ssSkel;
         std::stringstream ssSpines;
-        ssSkel << std::get<0>(this->soma.to_neuronize(counter,-1,1)) << std::endl;
-        ssSkel << std::get<0>(this->apical->to_neuronice(counter));
+        ssSkel << this->soma.to_swc(counter, -1, 1) << std::endl;
+        ssSkel << this->apical->to_swc(counter,spines);
         for (const auto& basal: this->basals) {
-            ssSkel << std::get<0>(basal->to_neuronice(counter));
+            ssSkel << basal->to_swc(counter,spines);
         }
-        return std::make_tuple(ssSkel.str(),ssSpines.str());
+        return ssSkel.str();
 
     }
 

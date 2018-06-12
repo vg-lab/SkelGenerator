@@ -10,18 +10,15 @@ using  namespace skelgenerator;
     int main(int argc, char *argv[]) {
 
          std::vector<std::string> basal = {"basal.wrl"};
-         std::string apiFile = {"api.wrl"};
+         std::string apiFile = {"apical.wrl"};
 
 
          Neuron neuron(apiFile,basal);
 
          std::ofstream skelFile;
          skelFile.open("neuron1.swc", std::ios::out);
-         skelFile << std::get<0>(neuron.to_neuronize());
+         skelFile << neuron.to_swc(true);
          skelFile.close();
-
-        neuron.spines_to_obj("testSpines");
-
 
     /*
         QApplication a(argc, argv);

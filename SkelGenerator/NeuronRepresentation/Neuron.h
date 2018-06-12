@@ -29,7 +29,7 @@ namespace skelgenerator {
         Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
 
         std::string to_asc();
-        std::tuple<std::string, std::string> to_neuronize();
+        std::string to_swc(bool spines = false);
         void spines_to_obj(std::string dirPath);
 
         int getReamingSegments() const;

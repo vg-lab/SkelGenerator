@@ -53,17 +53,17 @@ namespace skelgenerator{
         return ramification2;
     }
 
-    std::tuple<std::string, std::string> SubDendrite::to_neuronice(int &counter,int parent, int type) {
+    std::string SubDendrite::to_swc(int &counter, int parent, int type, bool spines) {
         std::stringstream ssSkel;
         std::stringstream ssSpines;
-        ssSkel << std::get<0>(this->getSec()->to_neuronice(counter,parent,type));
+        ssSkel << this->getSec()->to_swc(counter, parent, type,spines);
         if (this->getRamification1() != nullptr && this->getRamification2() != nullptr) {
             int newParent = counter;
-            ssSkel << std::get<0>(this->getRamification1()->to_neuronice(counter, newParent, type));
-            ssSkel << std::get<0>(this->getRamification2()->to_neuronice(counter, newParent, type));
+            ssSkel << this->getRamification1()->to_swc(counter, newParent, type,spines);
+            ssSkel << this->getRamification2()->to_swc(counter, newParent, type,spines);
         }
 
-        return std::make_tuple(ssSkel.str(),"");
+        return ssSkel.str();
 
     }
 }
