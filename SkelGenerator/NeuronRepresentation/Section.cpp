@@ -97,16 +97,16 @@ namespace skelgenerator {
             auto point = this->points[i];
             if (point->isSpine()) {
                 if (spines) {
-                    ssSkel << point->to_swc(counter, currentParent + 1,type);
+                    ssSkel << point->to_swc(counter, currentParent,type);
                     postSpine = true;
 
                 }
             } else {
                 if (!postSpine) {
-                    currentParent = counter - 1;
+                    currentParent = counter-1 ;
                     ssSkel << point->to_swc(counter, currentParent, type) << std::endl;
                 } else {
-                    ssSkel << point->to_swc(counter, currentParent + 1, type) << std::endl;
+                    ssSkel << point->to_swc(counter, currentParent, type) << std::endl;
                     postSpine = false;
                 }
             }

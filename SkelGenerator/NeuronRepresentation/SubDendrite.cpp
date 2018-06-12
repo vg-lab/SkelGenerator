@@ -58,7 +58,7 @@ namespace skelgenerator{
         std::stringstream ssSpines;
         ssSkel << this->getSec()->to_swc(counter, parent, type,spines);
         if (this->getRamification1() != nullptr && this->getRamification2() != nullptr) {
-            int newParent = counter;
+            int newParent = counter - 1;
             ssSkel << this->getRamification1()->to_swc(counter, newParent, type,spines);
             ssSkel << this->getRamification2()->to_swc(counter, newParent, type,spines);
         }
