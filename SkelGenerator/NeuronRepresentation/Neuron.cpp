@@ -19,6 +19,7 @@ namespace skelgenerator {
 
     Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, int connectionThreshold) {
         std::cout << "Conection Treshold " << connectionThreshold << std::endl;
+        this->incorrectConecctions = false;
         this->connectionThreshold = connectionThreshold;
         this->apical = nullptr;
         TDendrite apiDendrite = {};
@@ -63,7 +64,6 @@ namespace skelgenerator {
     }
 
     std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section *> fragments) {
-        std::cout << "Parsing Skel\n" << std::flush;
         std::set<Section *> reaminFragments;
         for (int i = 0; i < fragments.size(); i++) {
             reaminFragments.insert(fragments[i]);
@@ -76,7 +76,7 @@ namespace skelgenerator {
     }
 
     SubDendrite *Neuron::computeSubDendrite(Section *fragment, int initPoint, std::set<Section *> &reamingFragments) {
-        std::cout << "Processing fragment: " << fragment->getName() << "\n" << std::flush;
+        //std::cout << "Processing fragment: " << fragment->getName() << "\n" << std::flush;
         reamingFragments.erase(fragment);
         std::vector<TConn> conns;
         for (auto anotherFragment : reamingFragments) {
@@ -98,9 +98,6 @@ namespace skelgenerator {
             }
 
             if (minDistance < connectionThreshold) {
-                if (fragment->getName() == "FilamentSegment600000013") {
-                    std::cout << "    ";
-                }
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
                 conns.push_back(conn);
             }
@@ -125,7 +122,9 @@ namespace skelgenerator {
              * un connectionTreshold demasiado elevado, se opta por eliminar las conexiones problematicas y proseguir
              * con una solucion , Notese que estas conexiones eliminadas pueden volver a ser conectadas por otros fragmentos*/
             if (conn->p1 < 0) {
+                std::cout << "error de conexion" << std::endl;
                 conns.erase(conn);
+                this->incorrectConecctions = true;
             }
         }
 
@@ -287,7 +286,7 @@ namespace skelgenerator {
 
 
     void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-        if (!apiDendrite.fragments.empty()) {
+       if (!apiDendrite.fragments.empty()) {
             auto apiSpines = generateSpines(apiDendrite);
             this->spines.insert(apiSpines.begin(),apiSpines.end());
             addSpines(apical, apiSpines);
@@ -422,7 +421,7 @@ namespace skelgenerator {
     }
 
     std::string Neuron::to_swc(bool spines) {
-        int counter = 0;
+        int counter = 1;
         std::stringstream ssSkel;
         std::stringstream ssSpines;
         ssSkel << this->soma.to_swc(counter, -1, 1) << std::endl;
@@ -440,6 +439,10 @@ namespace skelgenerator {
             spine->to_obj("");
         }
 
+    }
+
+    bool Neuron::isIncorrectConecctions() const {
+        return incorrectConecctions;
     }
 
 

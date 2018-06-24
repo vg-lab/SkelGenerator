@@ -63,7 +63,9 @@ namespace skelgenerator {
 
         void open_dir_dialog(QLineEdit &target);
 
-        void showWarningDialog(int sobrantes, int &newThreshold, std::string &neuronName);
+        void showWarningDialogReaminingSegments(int sobrantes, int &newThreshold, std::string &neuronName);
+
+        void showWarningDialogIncorrectConnections(int &newThreshold, std::string &neuronName);
 
     };
 

@@ -91,9 +91,8 @@ namespace skelgenerator {
     }
 
 
-    void MainWindow::showWarningDialog(int sobrantes, int &newThreshold, std::string &neuronName) {
+    void MainWindow::showWarningDialogReaminingSegments(int sobrantes, int &newThreshold, std::string &neuronName) {
         MessageBox *msgBox;
-
         std::string msg;
         if (!neuronName.empty()) {
             msgBox = new MessageBox(30, true,this);
@@ -143,6 +142,55 @@ namespace skelgenerator {
 
     }
 
+    void MainWindow::showWarningDialogIncorrectConnections(int &newThreshold, std::string &neuronName) {
+        MessageBox *msgBox;
+        std::string msg;
+        if (!neuronName.empty()) {
+            msgBox = new MessageBox(30, true,this);
+            msg = "The neuron \"" + neuronName + "\" maybe has incorrect connections.\t";
+        } else {
+            msgBox = new MessageBox(this);
+            msg = "The neuron maybe has incorrect connections.\t";
+        }
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+        msgBox->setInformativeText(
+                "Do you want to process the neuron again changing the \"Connection Threshold\" or ignore the maybe incorrect conections?");
+        msgBox->setText(QString::fromStdString(msg));
+        QPushButton *changeButton = msgBox->addButton(tr(" Change Threshold "), QMessageBox::NoRole);
+        QPushButton *ignoreButton = msgBox->addButton(tr("Ignore"), QMessageBox::NoRole);
+        msgBox->setDefaultButton(changeButton);
+        msgBox->exec();
+
+        if (msgBox->clickedButton() == changeButton) {
+            QInputDialog inputDialog(this);
+            inputDialog.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+            inputDialog.setLabelText("New Connection Threshold");
+            inputDialog.setTextValue("Insert new value");
+            inputDialog.setInputMode(QInputDialog::IntInput);
+            inputDialog.setIntRange(0, 40);
+            inputDialog.setIntStep(1);
+            inputDialog.setIntValue(newThreshold);
+            inputDialog.exec();
+            newThreshold = inputDialog.intValue();
+
+
+        } else {
+            newThreshold = -1;
+            logFileEm.lock();
+            if (msgBox->clickedButton() != ignoreButton) {
+                logFile << "- The neuron \"" << neuronName <<
+                        "\" maybe has incorrect connections that have been automatically ignored\n";
+            } else {
+                logFile << "- The neuron \"" << neuronName <<
+                        "\" maybe has incorrect connections that have been ignored\n";
+            }
+            logFileEm.unlock();
+
+        }
+
+    }
+
     void MainWindow::procesSkel(std::string api, std::vector <std::string> basals, std::string outputFile,
                                 QString outputFormat, int connectionThreshold, std::string name) {
         outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
@@ -152,17 +200,27 @@ namespace skelgenerator {
         int newThreshold = connectionThreshold;
         Neuron neuron(api, basals, connectionThreshold);
         int sobrantes = neuron.getReamingSegments();
-        while (sobrantes > 0 && !ignore) {
-            QMetaObject::invokeMethod(this, "showWarningDialog", Qt::BlockingQueuedConnection,
-                                      Q_ARG(int, sobrantes),
-                                      Q_ARG(int & , newThreshold),
-                                      Q_ARG(std::string & , name));
+        bool haveIncorrectConnection = neuron.isIncorrectConecctions();
+        while ( (haveIncorrectConnection || sobrantes > 0) && !ignore) {
+            if (haveIncorrectConnection) {
+                QMetaObject::invokeMethod(this, "showWarningDialogIncorrectConnections", Qt::BlockingQueuedConnection,
+                                          Q_ARG(int &, newThreshold),
+                                          Q_ARG(std::string &, name));
 
+            } else {
+                if ( sobrantes > 0 ){
+                    QMetaObject::invokeMethod(this, "showWarningDialogReaminingSegments", Qt::BlockingQueuedConnection,
+                                              Q_ARG(int, sobrantes),
+                                              Q_ARG(int & , newThreshold),
+                                              Q_ARG(std::string & , name));
+                }
+            }
 
             ignore = newThreshold < 0;
             if (!ignore) {
                 Neuron neuron(api, basals, newThreshold);
                 sobrantes = neuron.getReamingSegments();
+                haveIncorrectConnection = neuron.isIncorrectConecctions();
             }
 
         }
@@ -275,4 +333,6 @@ namespace skelgenerator {
     MainWindow::~MainWindow() {
         delete ui;
     }
+
+
 }

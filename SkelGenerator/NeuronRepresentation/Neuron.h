@@ -24,6 +24,7 @@ namespace skelgenerator {
         int reamingSegments;
         int reamingSpines;
         spineSet spines;
+        bool incorrectConecctions;
 
     public:
         Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
@@ -31,6 +32,8 @@ namespace skelgenerator {
         std::string to_asc();
         std::string to_swc(bool spines = false);
         void spines_to_obj(std::string dirPath);
+
+        bool isIncorrectConecctions() const;
 
         int getReamingSegments() const;
 

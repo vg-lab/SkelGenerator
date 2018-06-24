@@ -98,7 +98,7 @@ int Spine::counter = 0;
 
     std::string Spine::to_swc(int &counter, int parent, int type) {
         std::stringstream ss;
-        ss << "#Spin"<<std::endl;
+        ss << "#Spine"<<std::endl;
         ss << std::setprecision(10) << counter << " " << type << " "  << std::fixed <<this->medialAxis[0].getPoint()[0] <<
            " " << this->medialAxis[0].getPoint()[1] << " " << this->medialAxis[0].getPoint()[2] << " " <<
            this ->medialAxis[0].getRadius() << " " << parent << std::endl;
@@ -111,7 +111,7 @@ int Spine::counter = 0;
                samplePoint.getRadius() << " " << counter-1 << std::endl;
             counter++;
         }
-        ss << "#nd Spin"<<std::endl;
+        ss << "#End Spine"<<std::endl;
 
 
         return ss.str();
