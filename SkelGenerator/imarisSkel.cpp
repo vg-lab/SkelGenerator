@@ -1,6 +1,6 @@
 
 #include <set>
-#include "vrmlReader.cpp"
+#include "vrmlReader-Deprecated.cpp"
 
 
 using namespace std;
