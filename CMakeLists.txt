@@ -41,7 +41,6 @@ common_find_package_post( )
 list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        Eigen3::Eigen
         )
 
 add_subdirectory( SkelGenerator )

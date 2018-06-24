@@ -48,11 +48,11 @@ set( SKELGENERATOR_HEADERS
 set( SKELGENERATOR_LINK_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        Eigen3::Eigen
         )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories( ${PROJECT_BINARY_DIR}/include ${PROJECT_BINARY_DIR}/src )
+include_directories( ${EIGEN_INCLUDE_DIR})
 
 add_definitions("-w")
 
