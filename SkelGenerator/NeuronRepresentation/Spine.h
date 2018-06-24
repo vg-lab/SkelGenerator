@@ -7,7 +7,7 @@
 
 #include "SamplePoint.h"
 #include <unordered_set>
-
+#include <vector>
 
 
 namespace skelgenerator {
@@ -62,13 +62,15 @@ namespace skelgenerator {
 
 
     struct SpinePtrComparator {
-        bool operator()(Spine *const &obj1, Spine *&obj2) const {
+    public:
+        bool operator()(Spine *const &obj1, Spine *const &obj2) const {
             return obj1->getInsertPoint() == obj2->getInsertPoint();
         }
     };
 
     struct SpinePtrHasher {
-        size_t operator()(Spine *const &obj) const {
+    public:
+        size_t operator()(Spine* const &obj) const {
             auto result = 31 + std::hash<float>()(obj->getInsertPoint().x());
             result *= 31 + std::hash<float>()(obj->getInsertPoint().y());
             result *= 31 + std::hash<float>()(obj->getInsertPoint().z());

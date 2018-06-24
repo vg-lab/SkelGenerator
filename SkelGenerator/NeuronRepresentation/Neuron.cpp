@@ -7,7 +7,7 @@
 #include "Section.h"
 #include "../Types.h"
 #include "Spine.h"
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <stack>
 #include <set>
 #include <unordered_set>
@@ -71,7 +71,7 @@ namespace skelgenerator {
 
         auto subDendrite = computeSubDendrite(fragments[0], 0, reaminFragments);
 
-        return std::make_tuple(subDendrite, reaminFragments.size());;
+        return std::make_tuple(subDendrite, static_cast<int>(reaminFragments.size()));;
 
     }
 

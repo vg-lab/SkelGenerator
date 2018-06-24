@@ -32,16 +32,16 @@ set( COMMON_PROJECT_DOMAIN gmrv.es )
 
 include( Common )
 
-common_find_package(Boost COMPONENTS system filesystem REQUIRED)
 common_find_package( Qt5Core SYSTEM REQUIRED )
 common_find_package( Qt5Widgets SYSTEM REQUIRED )
+common_find_package( Eigen3 SYSTEM REQUIRED )
 
 common_find_package_post( )
 
 list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        ${Boost_LIBRARIES}
+        Eigen3::Eigen
         )
 
 add_subdirectory( SkelGenerator )

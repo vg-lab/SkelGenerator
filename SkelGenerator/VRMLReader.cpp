@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <clocale>
 #include "VRMLReader.h"
 #include "Types.h"
 #include "NeuronRepresentation/Spine.h"

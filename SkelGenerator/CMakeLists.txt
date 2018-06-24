@@ -48,7 +48,7 @@ set( SKELGENERATOR_HEADERS
 set( SKELGENERATOR_LINK_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        ${Boost_LIBRARIES}
+        Eigen3::Eigen
         )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
