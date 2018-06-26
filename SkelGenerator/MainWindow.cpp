@@ -194,9 +194,7 @@ namespace skelgenerator {
     void MainWindow::procesSkel(std::string api, std::vector <std::string> basals, std::string outputFile,
                                 QString outputFormat, int connectionThreshold, std::string name) {
         outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
-        std::string ascFile = outputFile;
         bool ignore = false;
-        ascFile.append(".asc");
         int newThreshold = connectionThreshold;
         Neuron neuron(api, basals, connectionThreshold);
         int sobrantes = neuron.getReamingSegments();
@@ -224,20 +222,16 @@ namespace skelgenerator {
             }
 
         }
-        std::ofstream file(ascFile, std::ios::out);
-        file << neuron.to_asc();
-
-        if (outputFormat != "NeurolucidaASC") {
-            QProcess process;
-            QStringList arguments;
-            std::string extension = extensions.at(outputFormat.toStdString());
-            std::string outFile2 = outputFile;
-            outFile2.append(extension);
-            arguments << QString::fromStdString(ascFile) << QString::fromStdString(outFile2) << outputFormat;
-            process.start(program, arguments);
-            process.waitForFinished();
-            std::remove(ascFile.c_str());
+        if (outputFormat == "NeurolucidaASC") {
+            std::ofstream file(outputFile.append(".asc"), std::ios::out);
+            file << neuron.to_asc();
+            file.close();
+        } else if (outputFormat == "SWC") {
+            std::ofstream file (outputFile.append(".swc"),std::ios::out);
+            file << neuron.to_swc();
+            file.close();
         }
+
 
     }
 

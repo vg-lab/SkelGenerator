@@ -23,13 +23,6 @@ namespace skelgenerator {
         std::ofstream logFile;
         QProgressDialog *procesingDialog;
         QFutureWatcher<void> watcher;
-        QString const program = "NLMorphologyConverter.exe";
-        std::map <std::string, std::string> extensions = {{"NeurolucidaASC",        ".asc"},
-                                                          {"NeurolucidaDAT",        ".dat"},
-                                                          {"NeurolucidaASCClassic", ".asc"},
-                                                          {"NeurolucidaDATClassic", ".dat"},
-        };
-        int nsec;
 
     public:
         explicit MainWindow(QWidget *parent = 0);
