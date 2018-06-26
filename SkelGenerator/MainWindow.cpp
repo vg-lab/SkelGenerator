@@ -196,9 +196,9 @@ namespace skelgenerator {
         outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
         bool ignore = false;
         int newThreshold = connectionThreshold;
-        Neuron neuron(api, basals, connectionThreshold);
-        int sobrantes = neuron.getReamingSegments();
-        bool haveIncorrectConnection = neuron.isIncorrectConecctions();
+        auto neuron= new Neuron(api, basals, connectionThreshold);
+        int sobrantes = neuron->getReamingSegments();
+        bool haveIncorrectConnection = neuron->isIncorrectConecctions();
         while ( (haveIncorrectConnection || sobrantes > 0) && !ignore) {
             if (haveIncorrectConnection) {
                 QMetaObject::invokeMethod(this, "showWarningDialogIncorrectConnections", Qt::BlockingQueuedConnection,
@@ -216,19 +216,21 @@ namespace skelgenerator {
 
             ignore = newThreshold < 0;
             if (!ignore) {
-                Neuron neuron(api, basals, newThreshold);
-                sobrantes = neuron.getReamingSegments();
-                haveIncorrectConnection = neuron.isIncorrectConecctions();
+                delete(neuron);
+                neuron = new Neuron(api, basals, newThreshold);
+                sobrantes = neuron->getReamingSegments();
+                haveIncorrectConnection = neuron->isIncorrectConecctions();
             }
 
         }
+
         if (outputFormat == "NeurolucidaASC") {
             std::ofstream file(outputFile.append(".asc"), std::ios::out);
-            file << neuron.to_asc();
+            file << neuron->to_asc();
             file.close();
         } else if (outputFormat == "SWC") {
             std::ofstream file (outputFile.append(".swc"),std::ios::out);
-            file << neuron.to_swc();
+            file << neuron->to_swc();
             file.close();
         }
 
