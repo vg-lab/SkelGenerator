@@ -1,6 +1,4 @@
 #include "MainWindow.h"
-#include "VRMLReader.h"
-#include "NeuronRepresentation/Neuron.h"
 #include <QApplication>
 #include <iostream>
 

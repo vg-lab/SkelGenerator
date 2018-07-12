@@ -1,7 +1,6 @@
 #include "MainWindow.h"
 #include "messagebox.h"
 #include "ui_MainWindow.h"
-#include "NeuronRepresentation/Neuron.h"
 
 #include <QFileDialog>
 #include <QInputDialog>
@@ -9,6 +8,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <cstring>
 #include <iostream>
+#include <SkelGeneratorUtil/Neuron.h>
 
 namespace skelgenerator {
     MainWindow::MainWindow(QWidget *parent) :

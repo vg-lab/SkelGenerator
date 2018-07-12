@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <Eigen/Dense>
-#include "NeuronRepresentation/Section.h"
+#include "Section.h"
 
 namespace skelgenerator {
 

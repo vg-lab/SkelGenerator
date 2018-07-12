@@ -16,18 +16,9 @@ configure_file( ${CMAKE_SOURCE_DIR}/CMake/common/cpp/version.cpp
 
 set( SKELGENERATOR_SOURCES
         ${PROJECT_BINARY_DIR}/src/version.cpp
-
         main.cpp
         MainWindow.cpp
         messagebox.cpp
-        NeuronRepresentation/Neuron.cpp
-        NeuronRepresentation/SamplePoint.cpp
-        NeuronRepresentation/Dendrite.cpp
-        NeuronRepresentation/Section.cpp
-        NeuronRepresentation/SubDendrite.cpp
-        NeuronRepresentation/Spine.cpp
-        VRMLReader.cpp
-
         )
 
 set( SKELGENERATOR_HEADERS
@@ -35,20 +26,12 @@ set( SKELGENERATOR_HEADERS
         MainWindow.ui
         MainWindow.h
         messagebox.h
-        Types.h
-        NeuronRepresentation/Neuron.h
-        NeuronRepresentation/SamplePoint.h
-        NeuronRepresentation/Dendrite.h
-        NeuronRepresentation/Section.h
-        NeuronRepresentation/SubDendrite.h
-        NeuronRepresentation/Spine.h
-        VRMLReader.h
         )
 
 set( SKELGENERATOR_LINK_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        Eigen3::Eigen
+        skelgeneratorutil
         )
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )

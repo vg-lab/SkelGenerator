@@ -34,16 +34,16 @@ include( Common )
 
 common_find_package( Qt5Core SYSTEM REQUIRED )
 common_find_package( Qt5Widgets SYSTEM REQUIRED )
-common_find_package( Eigen3 SYSTEM REQUIRED )
+common_find_package(Eigen3 SYSTEM REQUIRED)
 
 common_find_package_post( )
 
 list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        Eigen3::Eigen
         )
 
+add_subdirectory( SkelGeneratorUtil)
 add_subdirectory( SkelGenerator )
 
 if( MSVC )

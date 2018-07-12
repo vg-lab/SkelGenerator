@@ -6,7 +6,7 @@
 #include <clocale>
 #include "VRMLReader.h"
 #include "Types.h"
-#include "NeuronRepresentation/Spine.h"
+#include "Spine.h"
 
 namespace skelgenerator {
 

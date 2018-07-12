@@ -3,9 +3,9 @@
 //
 
 #include "Neuron.h"
-#include "../VRMLReader.h"
+#include "VRMLReader.h"
 #include "Section.h"
-#include "../Types.h"
+#include "Types.h"
 #include "Spine.h"
 #include <Eigen/Dense>
 #include <stack>

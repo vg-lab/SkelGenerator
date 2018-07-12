@@ -8,7 +8,7 @@
 #include <set>
 #include "SamplePoint.h"
 #include "Dendrite.h"
-#include "../Types.h"
+#include "Types.h"
 #include "Spine.h"
 
 namespace skelgenerator {
