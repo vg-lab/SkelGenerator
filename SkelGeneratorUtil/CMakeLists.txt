@@ -22,6 +22,8 @@ set(SKELGENERATORUTIL_HEADERS
         )
 
 set(SKELGENERATORUTIL_LINK_LIBRARIES
+        ${Boost_LIBRARIES}
+
         )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

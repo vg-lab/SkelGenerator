@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 
 namespace skelgenerator {
@@ -435,8 +436,16 @@ namespace skelgenerator {
 
     void Neuron::spines_to_obj(std::string dirPath) {
         int i = 0;
+
+        if( !boost::filesystem::exists(dirPath) ) {
+            boost::filesystem::create_directory(dirPath);
+        } else {
+            boost::filesystem::remove_all(dirPath);
+            boost::filesystem::create_directory(dirPath);
+        }
+
         for (const auto& spine: this->spines){
-            spine->to_obj("");
+            spine->to_obj(dirPath);
         }
 
     }

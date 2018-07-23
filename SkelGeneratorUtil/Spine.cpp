@@ -90,7 +90,7 @@ int Spine::counter = 0;
 
     void Spine::to_obj(const std::string &path) {
         for (int i = 0; i < this->spine3D.shapes.size(); ++i) {
-            std::string filePath = std::to_string(id) +this->getName() + "-" + std::to_string(i)+".obj";
+            std::string filePath = path +"/" +std::to_string(id) +this->getName() + "-" + std::to_string(i)+".obj";
             shape_to_obj(filePath,i);
         }
 
