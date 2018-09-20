@@ -443,9 +443,9 @@ namespace skelgenerator {
             boost::filesystem::remove_all(dirPath);
             boost::filesystem::create_directory(dirPath);
         }
-
         for (const auto& spine: this->spines){
-            spine->to_obj(dirPath);
+            spine->to_obj(dirPath,i);
+            i++;
         }
 
     }

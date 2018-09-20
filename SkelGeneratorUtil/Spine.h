@@ -52,7 +52,7 @@ namespace skelgenerator {
 
         bool isSpine() override;
 
-        void to_obj(const std::string &path);
+        void to_obj(const std::string &path,int i);
 
         void shape_to_obj(const std::string &path,int shapeIndex);
 
