@@ -44,7 +44,7 @@ namespace skelgenerator {
 
         void trim(int i);
 
-        void addPoint(Eigen::Vector3f point, float radius);
+        void addPoint(Eigen::Vector3d point, float radius);
 
         void addPoint(Spine *&samplePoint, int pos);
 

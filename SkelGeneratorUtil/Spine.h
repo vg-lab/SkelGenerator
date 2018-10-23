@@ -14,7 +14,7 @@ namespace skelgenerator {
 
 
     typedef struct {
-        std::vector <Eigen::Vector3f> points;
+        std::vector <Eigen::Vector3d> points;
         unsigned int nCircles;
         std::vector<std::vector<int>> faces;
     } TShape;
@@ -28,7 +28,7 @@ namespace skelgenerator {
     class Spine : public SamplePoint {
         /** The attributes inherited from SamplePoint are the endpoint and its radius **/
         std::vector<SamplePoint> medialAxis;
-        Eigen::Vector3f insertPoint;
+        Eigen::Vector3d insertPoint;
         TSpine spine3D;
         unsigned int id;
 
@@ -40,11 +40,11 @@ namespace skelgenerator {
 
         explicit Spine(TSpine spine3D);
 
-        const Eigen::Vector3f &getInsertPoint() const;
+        const Eigen::Vector3d &getInsertPoint() const;
 
         const std::string &getName() const;
 
-        void addPoint(Eigen::Vector3f point, float radius);
+        void addPoint(Eigen::Vector3d point, float radius);
 
         void calculatePoints();
 

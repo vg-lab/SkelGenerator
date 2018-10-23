@@ -13,7 +13,7 @@ namespace skelgenerator {
     TFragment VRMLReader::parseFilament(const std::string &name, std::ifstream &file) {
         TFragment segment;
         std::string line;
-        std::vector<Eigen::Vector3f> points;
+        std::vector<Eigen::Vector3d> points;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
         while (file >> line) {
             if (line.find("point") != std::string::npos) {
@@ -30,7 +30,7 @@ namespace skelgenerator {
                         point[nCoords] = std::stof(line);
                         nCoords++;
                         if (nCoords == 3) {
-                            Eigen::Vector3f vec(point[0], point[1], point[2]);
+                            Eigen::Vector3d vec(point[0], point[1], point[2]);
                             points.emplace_back(vec);
                             nCoords = 0;
                         }
@@ -63,7 +63,7 @@ namespace skelgenerator {
     TShape VRMLReader::parseShape(std::ifstream &file) {
         TShape shape;
         std::string line;
-        std::vector<Eigen::Vector3f> points;
+        std::vector<Eigen::Vector3d> points;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
         while (file >> line) {
             if (line.find("point") != std::string::npos) {
@@ -80,7 +80,7 @@ namespace skelgenerator {
                         point[nCoords] = std::stof(line);
                         nCoords++;
                         if (nCoords == 3) {
-                            Eigen::Vector3f vec(point[0], point[1], point[2]);
+                            Eigen::Vector3d vec(point[0], point[1], point[2]);
                             points.emplace_back(vec);
                             nCoords = 0;
                         }

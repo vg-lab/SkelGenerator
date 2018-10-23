@@ -12,12 +12,12 @@ namespace skelgenerator {
         return Str;
     }
 
-    SamplePoint::SamplePoint(Eigen::Vector3f& point, float r) {
+    SamplePoint::SamplePoint(Eigen::Vector3d& point, float r) {
         this->point = point;
         this->r = r;
     }
 
-    const Eigen::Vector3f &SamplePoint::getPoint() const {
+    const Eigen::Vector3d &SamplePoint::getPoint() const {
         return point;
     }
 

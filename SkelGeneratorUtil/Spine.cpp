@@ -16,7 +16,7 @@ int Spine::counter = 0;
         counter++;
         for (const auto &shape: spine3D.shapes) {
             for (int cir = 0; cir < shape.nCircles; cir++) {
-                auto medio = Eigen::Vector3f(0, 0, 0);
+                auto medio = Eigen::Vector3d(0, 0, 0);
                 for (int i = 0; i < 17; i++) {
                     medio += shape.points[cir * 17 + i];
                 }
@@ -29,7 +29,7 @@ int Spine::counter = 0;
 
     }
 
-    void Spine::addPoint(Eigen::Vector3f point, float radius) {
+    void Spine::addPoint(Eigen::Vector3d point, float radius) {
         auto p = SamplePoint(point, radius);
         this->medialAxis.push_back(p);
     }
@@ -45,7 +45,7 @@ int Spine::counter = 0;
         return this->spine3D.nombre;
     }
 
-    const Eigen::Vector3f &Spine::getInsertPoint() const {
+    const Eigen::Vector3d &Spine::getInsertPoint() const {
         return insertPoint;
     }
 

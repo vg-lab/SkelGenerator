@@ -53,7 +53,7 @@ namespace skelgenerator {
     Section *Neuron::getFragment(const TFragment &fragment) {
         auto sectionSkel = new Section(fragment.nombre);
         for (int cir = 0; cir < fragment.nCircles; cir++) {
-            auto medio = Eigen::Vector3f(0, 0, 0);
+            auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
             }
@@ -240,7 +240,7 @@ namespace skelgenerator {
         for (int i = 0; i<360; i+=10) {
             auto x = centerX + this->soma.getRadius() * cos(i);
             auto y = centerY + this->soma.getRadius() * sin(i);
-            Eigen::Vector3f point (x,y,this->soma.getPoint()[2]);
+            Eigen::Vector3d point (x,y,this->soma.getPoint()[2]);
             SamplePoint pointr(point,0.15f);
             ss << pointr.to_asc(tab) << std::endl;
         }
@@ -382,7 +382,7 @@ namespace skelgenerator {
     }
 
     void Neuron::generateSoma() {
-        Eigen::Vector3f somaBasal(0, 0, 0);
+        Eigen::Vector3d somaBasal(0, 0, 0);
 
 
         for (auto &basal: this->basals) {
@@ -393,11 +393,11 @@ namespace skelgenerator {
         auto Zplane = 0;
 
         auto somaRadius = 1000000;
-        Eigen::Vector3f somaCenter(0,0,0);
+        Eigen::Vector3d somaCenter(0,0,0);
 
         if (apical != nullptr) {
             auto secApical = apical->getDendrite()->getSec();
-            Eigen::Vector3f somaApical = (*secApical)[0]->getPoint();
+            Eigen::Vector3d somaApical = (*secApical)[0]->getPoint();
             Zplane += somaApical[2];
 
             somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
@@ -411,7 +411,7 @@ namespace skelgenerator {
         }
 
         for (auto &basal:this->basals) {
-            Eigen::Vector3f firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
+            Eigen::Vector3d firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
             Zplane += firstPoint[2];
             if ((firstPoint - somaCenter).norm() < somaRadius)
                 somaRadius = (firstPoint - somaCenter).norm();

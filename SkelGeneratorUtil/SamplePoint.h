@@ -14,15 +14,15 @@ namespace skelgenerator {
     class SamplePoint {
 
     protected:
-        Eigen::Vector3f point;
+        Eigen::Vector3d point;
         float r{-1};
 
     public:
-        SamplePoint(Eigen::Vector3f &point, float r);
+        SamplePoint(Eigen::Vector3d &point, float r);
 
         SamplePoint() = default;
 
-        const Eigen::Vector3f &getPoint() const;
+        const Eigen::Vector3d &getPoint() const;
 
         float getRadius() const;
 

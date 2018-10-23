@@ -75,7 +75,7 @@ namespace skelgenerator {
 
     }
 
-    void Section::addPoint(Eigen::Vector3f point, float radius) {
+    void Section::addPoint(Eigen::Vector3d point, float radius) {
         auto p = new SamplePoint(point,radius);
         points.push_back(p);
 
