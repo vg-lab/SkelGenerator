@@ -54,6 +54,8 @@ namespace skelgenerator {
 
         void to_obj(const std::string &path,int i);
 
+        void to_obj_without_base (const std::string &path,int i);
+
         void shape_to_obj(const std::string &path,int shapeIndex);
 
         std::string to_swc(int &counter, int parent, int type) override;

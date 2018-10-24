@@ -434,7 +434,7 @@ namespace skelgenerator {
 
     }
 
-    void Neuron::spines_to_obj(std::string dirPath) {
+    void Neuron::spines_to_obj_with_base(std::string dirPath) {
         int i = 0;
 
         if( !boost::filesystem::exists(dirPath) ) {
@@ -452,6 +452,21 @@ namespace skelgenerator {
 
     bool Neuron::isIncorrectConecctions() const {
         return incorrectConecctions;
+    }
+
+    void Neuron::spines_to_obj_without_base(std::string dirPath) {
+        int i = 0;
+
+        if( !boost::filesystem::exists(dirPath) ) {
+            boost::filesystem::create_directory(dirPath);
+        } else {
+            boost::filesystem::remove_all(dirPath);
+            boost::filesystem::create_directory(dirPath);
+        }
+        for (const auto& spine: this->spines){
+            spine->to_obj_without_base(dirPath,i);
+            i++;
+        }
     }
 
 

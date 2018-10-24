@@ -96,6 +96,53 @@ int Spine::counter = 0;
 
     }
 
+    void Spine::to_obj_without_base(const std::string &path, int nSpine) {
+        std::string filePath = path +"/" +std::to_string(nSpine) +this->getName()+".obj";
+        if (this->spine3D.shapes.size() == 2) {
+            auto shape = this->spine3D.shapes[1];
+            std::ofstream file;
+            file.open(filePath, std::ios::out);
+
+            file << "#" << shape.points.size() + 1 << std::endl;
+            file << "#" << shape.faces.size() + 16 << std::endl;
+
+            file << "o " << this->getName() << std::endl;
+            for (const auto &v : shape.points) {
+                file << std::setprecision(5) << "v " << v[0] << " " << v[1] << " " << v[2] << std::endl;
+            }
+
+            Eigen::Vector3d closePoint(0,0,0);
+            for (int i = 0; i < 17; i++ ){
+                closePoint += shape.points[i];
+            }
+            closePoint /= 17;
+
+            file << std::setprecision(5) << "v " << closePoint[0] << " " << closePoint[1] << " " << closePoint[2] << std::endl;
+
+            for (const auto &face: shape.faces) {
+                file << "f ";
+                for (int i = face.size() -1; i > 0 ; i--) {
+                    file << face[i] + 1 << " ";
+                }
+                file << face[0] + 1  << std::endl;
+
+            }
+
+
+            int closePointIndex = static_cast<int>(shape.points.size() +1);
+            for (int i = 1 ; i<17; i++) {
+                file << "f " << closePointIndex << " " << i << " " << i +1 << std::endl;
+            }
+
+            file.close();
+        } else  {
+            shape_to_obj(filePath,0);
+        }
+
+
+    }
+
+
     std::string Spine::to_swc(int &counter, int parent, int type) {
         std::stringstream ss;
         ss << "#Spine"<<std::endl;
