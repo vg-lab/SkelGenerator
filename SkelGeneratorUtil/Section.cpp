@@ -86,14 +86,14 @@ namespace skelgenerator {
 
     }
 
-    std::string Section::to_swc(int &counter, int parent, int type,bool spines) {
+    std::string Section::to_swc(int &counter, int parent, int type,bool spines,int init) {
         std::stringstream ssSkel;
 
-        ssSkel << this->points[0]->to_swc(counter, parent, type)<< std::endl;
+        ssSkel << this->points[init]->to_swc(counter, parent, type)<< std::endl;
         int currentParent = counter -1;
         bool postSpine = false;
 
-        for (int i= 1; i< this->size(); i++){
+        for (int i= init + 1; i< this->size(); i++){
             auto point = this->points[i];
             if (point->isSpine()) {
                 if (spines) {

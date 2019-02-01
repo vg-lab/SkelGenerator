@@ -31,7 +31,7 @@ namespace skelgenerator {
 
         std::string to_asc(std::string tab);
 
-        std::string to_swc(int &counter, int parent, int type,bool spines);
+        std::string to_swc(int &counter, int parent, int type,bool spines,int init = 0);
 
     };
 }

@@ -37,7 +37,7 @@ namespace skelgenerator {
 
         static Section * unionSection(Section *section1, Section *section2);
 
-        std::string to_swc(int &counter, int parent, int type, bool spines);
+        std::string to_swc(int &counter, int parent, int type, bool spines,int init = 0);
 
 
         void reverse();

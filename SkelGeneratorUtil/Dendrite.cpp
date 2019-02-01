@@ -33,7 +33,7 @@ namespace skelgenerator {
 
     std::string Dendrite::to_swc(int &counter, bool spines) {
         int type = this->dendtype == APICAL ? 4:3;
-        return this->dendrite->to_swc(counter, 1, type,spines);
+        return this->dendrite->to_swc(counter, 1, type,spines,3);
     }
 }
 

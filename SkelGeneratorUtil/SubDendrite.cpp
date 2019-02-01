@@ -53,10 +53,10 @@ namespace skelgenerator{
         return ramification2;
     }
 
-    std::string SubDendrite::to_swc(int &counter, int parent, int type, bool spines) {
+    std::string SubDendrite::to_swc(int &counter, int parent, int type, bool spines,int init) {
         std::stringstream ssSkel;
         std::stringstream ssSpines;
-        ssSkel << this->getSec()->to_swc(counter, parent, type,spines);
+        ssSkel << this->getSec()->to_swc(counter, parent, type,spines,init);
         if (this->getRamification1() != nullptr && this->getRamification2() != nullptr) {
             int newParent = counter - 1;
             ssSkel << this->getRamification1()->to_swc(counter, newParent, type,spines);
