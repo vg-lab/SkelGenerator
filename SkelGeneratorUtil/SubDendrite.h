@@ -29,9 +29,11 @@ namespace skelgenerator {
 
         void setRamification2(SubDendrite *ramification2);
 
-        std::string to_asc(std::string tab);
+        std::string to_asc(std::string tab, int i);
 
         std::string to_swc(int &counter, int parent, int type,bool spines,int init = 0);
+
+        void removeDuplicates(float threshold);
 
     };
 }

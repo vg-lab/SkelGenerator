@@ -34,7 +34,9 @@ namespace skelgenerator {
             basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
         }
 
+
         procesSkel(apiDendrite, basalDendrites);
+        removeDuplicates();
         generateSoma();
         procesSpines(apiDendrite, basalDendrites);
 
@@ -58,7 +60,11 @@ namespace skelgenerator {
                 medio += fragment.points[cir * 17 + i];
             }
             medio = medio / 17;
-            float radius = (medio - fragment.points[cir * 17 + 1]).norm();
+            float radius = -1;
+            for (int i =0 ; i < 17; i++) {
+                 auto r = (medio - fragment.points[cir * 17 + i]).norm();
+                 radius = radius < r ? r : radius;
+            }
             sectionSkel->addPoint(medio, radius);
         }
         return sectionSkel;
@@ -247,9 +253,9 @@ namespace skelgenerator {
 
         ss << ")" << std::endl;
         if (this->apical != nullptr)
-            ss << this->apical->to_asc(tab);
+            ss << this->apical->to_asc(tab, 5);
         for (auto basal:this->basals) {
-            ss << basal->to_asc(tab);
+            ss << basal->to_asc(tab, 5);
         }
         return ss.str();
     }
@@ -466,6 +472,13 @@ namespace skelgenerator {
         for (const auto& spine: this->spines){
             spine->to_obj_without_base(dirPath,i);
             i++;
+        }
+    }
+
+    void Neuron::removeDuplicates(int threshold){
+        this->apical->removeDuplication(threshold);
+        for (const auto& basal: basals) {
+            basal->removeDuplication(threshold);
         }
     }
 

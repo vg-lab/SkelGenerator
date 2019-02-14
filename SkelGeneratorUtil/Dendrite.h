@@ -26,11 +26,15 @@ namespace skelgenerator {
 
         void setDendtype(DENDTYPE dendtype);
 
-        std::string to_asc(std::string tab);
+        std::string to_asc(std::string tab, int i);
 
         SubDendrite *getDendrite() const;
 
         std::string to_swc(int &counter, bool spines);
+
+        void removeDuplication(int threshold);
+
+
 
 
     };

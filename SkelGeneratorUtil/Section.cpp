@@ -40,16 +40,17 @@ namespace skelgenerator {
         return name;
     }
 
-    std::string Section::to_asc(std::string tab) {
+    std::string Section::to_asc(std::string tab, int init) {
         std::stringstream ss;
-        int i =1 ;
+        int counter =1 ;
         if (this->size() == 0) {
             ss << tab  << "Empty Section: " << this->name;
         }
         ss << tab << "; " << this->name << std::endl;
-        for (const auto &point:this->points) {
-            ss << point->to_asc(tab) <<"\t;\t" << i << std::endl;
-            i++;
+        for (int i = init;i< points.size(); i++) {
+            auto point = points[i];
+            ss << point->to_asc(tab) <<"\t;\t" << counter << std::endl;
+            counter++;
         }
         return ss.str();
     }
@@ -112,6 +113,10 @@ namespace skelgenerator {
             }
         }
         return ssSkel.str();
+    }
+
+    void Section::remove(int index){
+        this->points.erase(this->points.begin() + index);
     }
 }
 

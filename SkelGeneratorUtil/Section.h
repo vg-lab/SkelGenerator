@@ -21,9 +21,12 @@ namespace skelgenerator {
 
     public:
         Section() = default;
-        Section(const std::string& name);
+
+        explicit Section(const std::string& name);
         void addPoint(SamplePoint*& samplePoint);
         int size();
+
+        void remove(int index);
 
         SamplePoint*& operator[] (std::size_t idx) { return points[idx];}
 
@@ -33,7 +36,7 @@ namespace skelgenerator {
 
         const std::string &getName() const;
 
-        std::string to_asc(std::string tab);
+        std::string to_asc(std::string tab, int i);
 
         static Section * unionSection(Section *section1, Section *section2);
 

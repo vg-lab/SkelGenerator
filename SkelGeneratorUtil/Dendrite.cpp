@@ -16,13 +16,13 @@ namespace skelgenerator {
         Dendrite::dendrite = dendrite;
     }
 
-    std::string Dendrite::to_asc(std::string tab) {
+    std::string Dendrite::to_asc(std::string tab, int init) {
         std::stringstream ss;
         std::string color = this->dendtype==APICAL ? "Green": "Blue";
         std::string type = this->dendtype == APICAL ? "Apical" : "Dendrite";
         ss << tab << " (\t(Color " << color << ")" << std::endl;
         ss << tab << "(" << type << ")" << std::endl;
-        ss << this->dendrite->to_asc(tab);
+        ss << this->dendrite->to_asc(tab, init);
         ss << tab << ") ; End of Tree" << std::endl;
         return ss.str();
     }
@@ -34,6 +34,10 @@ namespace skelgenerator {
     std::string Dendrite::to_swc(int &counter, bool spines) {
         int type = this->dendtype == APICAL ? 4:3;
         return this->dendrite->to_swc(counter, 1, type,spines,3);
+    }
+
+    void Dendrite::removeDuplication(int threshold) {
+        dendrite->removeDuplicates(threshold);
     }
 }
 
