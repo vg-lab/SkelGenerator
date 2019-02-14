@@ -66,7 +66,7 @@ namespace skelgenerator{
 
     void SubDendrite::removeDuplicates(float threshold) {
         if (this->getRamification1() != nullptr) {
-            auto r1Sec = *(this->getRamification1()->getSec());
+            auto &r1Sec = *(this->getRamification1()->getSec());
             for (const auto &point : *(this->getSec())) {
                 for (int i = r1Sec.size() - 1; i >= 0; i--) {
                     if ((point->getPoint() - r1Sec[i]->getPoint()).norm() < threshold) {
@@ -79,7 +79,7 @@ namespace skelgenerator{
         }
 
         if (this->getRamification2() != nullptr) {
-            auto r2Sec = *(this->getRamification2()->getSec());
+            auto &r2Sec = *(this->getRamification2()->getSec());
             for (const auto &point : *(this->getSec())) {
                 for (int i = r2Sec.size() - 1; i >= 0; i--) {
                     if ((point->getPoint() - r2Sec[i]->getPoint()).norm() < threshold) {
