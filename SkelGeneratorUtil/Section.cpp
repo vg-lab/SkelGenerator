@@ -48,7 +48,7 @@ namespace skelgenerator {
         }
         ss << tab << "; " << this->name << std::endl;
         for (const auto &point:this->points) {
-            ss << point->to_asc(tab) <<";  " << i << std::endl;
+            ss << point->to_asc(tab) <<"\t;\t" << i << std::endl;
             i++;
         }
         return ss.str();

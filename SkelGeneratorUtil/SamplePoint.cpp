@@ -27,7 +27,7 @@ namespace skelgenerator {
 
     std::string SamplePoint::to_asc(std::string tab) const {
         std::stringstream ss;
-        ss << std::setprecision(10) <<tab <<"( "  <<this->point[0] << "\t" << this->point[1] << "\t" << this->point[2] << "\t" << this -> r << " )";
+        ss << std::setprecision(10) <<tab <<"( "  <<this->point[0] << "\t" << this->point[1] << "\t" << this->point[2] << "\t" << this -> r << ")";
 
         return ss.str();
     }
