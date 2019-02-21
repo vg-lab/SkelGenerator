@@ -32,7 +32,7 @@ namespace skelgenerator {
 
         std::string to_swc(int &counter, bool spines);
 
-        void removeDuplication(int threshold);
+        void removeDuplication(float threshold);
 
 
 

@@ -27,7 +27,7 @@ namespace skelgenerator {
         bool incorrectConecctions;
 
     public:
-        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, int connectionThreshold = 3);
+        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, float connectionThreshold = 3);
 
         std::string to_asc();
         std::string to_swc(bool spines = false);
@@ -62,10 +62,9 @@ namespace skelgenerator {
 
         void addSpines(Dendrite *dendrite, spineSet &spines);
 
-
         std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, Spine *spine);
 
-        void removeDuplicates(int threshold = 1000);
+        void removeDuplicates(float threshold = 0.2);
 
 
     };

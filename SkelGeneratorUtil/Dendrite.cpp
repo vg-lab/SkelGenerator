@@ -36,7 +36,7 @@ namespace skelgenerator {
         return this->dendrite->to_swc(counter, 1, type,spines,3);
     }
 
-    void Dendrite::removeDuplication(int threshold) {
+    void Dendrite::removeDuplication(float threshold) {
         dendrite->removeDuplicates(threshold);
     }
 }

@@ -18,8 +18,8 @@
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, int connectionThreshold) {
-        std::cout << "Conection Treshold " << connectionThreshold << std::endl;
+    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, float connectionThreshold) {
+        //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->incorrectConecctions = false;
         this->connectionThreshold = connectionThreshold;
         this->apical = nullptr;
@@ -54,7 +54,7 @@ namespace skelgenerator {
 
     Section *Neuron::getFragment(const TFragment &fragment) {
         auto sectionSkel = new Section(fragment.nombre);
-        for (int cir = 0; cir < fragment.nCircles; cir++) {
+        for (int cir = 6; cir < fragment.nCircles - 6; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
@@ -91,18 +91,21 @@ namespace skelgenerator {
             int minPoint1 = 0;
             int minPoint2 = 0;
             for (int i = 0; i < fragment->size(); i++) {
+                auto p1 = (*fragment)[i]->getPoint();
+                auto p1r = (*fragment)[i]->getRadius();
                 for (int j = 0; j < anotherFragment->size(); j++) {
-                    auto p1 = (*fragment)[i]->getPoint();
                     auto p2 = (*anotherFragment)[j]->getPoint();
+                    auto p2r =(*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
 
-                    if (dist < minDistance) {
+                    if ( dist < minDistance ) {
                         minDistance = dist;
                         minPoint1 = i;
                         minPoint2 = j;
                     }
                 }
             }
+
 
             if (minDistance < connectionThreshold) {
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
@@ -122,6 +125,7 @@ namespace skelgenerator {
         }
 
 
+
         fragment->trim(initPoint);
         for (auto conn = conns.begin(); conn < conns.end(); conn++) {
             conn->p1 -= initPoint;
@@ -129,7 +133,7 @@ namespace skelgenerator {
              * un connectionTreshold demasiado elevado, se opta por eliminar las conexiones problematicas y proseguir
              * con una solucion , Notese que estas conexiones eliminadas pueden volver a ser conectadas por otros fragmentos*/
             if (conn->p1 < 0) {
-                std::cout << "error de conexion" << std::endl;
+                //std::cout << "error de conexion" << std::endl;
                 conns.erase(conn);
                 this->incorrectConecctions = true;
             }
@@ -144,7 +148,7 @@ namespace skelgenerator {
                 auto con2 = conns[1];
                 int dist = abs(con1.p1 - con2.p1);
                 if (dist < 2 && (con1.p1 == fragment->size() - 1 || con2.p1 == fragment->size() - 1)) {
-                    std::cout << "Seccion" << std::endl;
+                    //std::cout << "Seccion" << std::endl;
                     auto subDendrite = new SubDendrite(fragment);
                     reamingFragments.erase(con1.fragment2);
                     reamingFragments.erase(con2.fragment2);
@@ -253,15 +257,16 @@ namespace skelgenerator {
 
         ss << ")" << std::endl;
         if (this->apical != nullptr)
-            ss << this->apical->to_asc(tab, 5);
+            ss << this->apical->to_asc(tab, 0);
         for (auto basal:this->basals) {
-            ss << basal->to_asc(tab, 5);
+            ss << basal->to_asc(tab, 0);
         }
         return ss.str();
     }
 
     void Neuron::procesSkel(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         int reamingFragments = 0;
+        std::cout << "Apical" << std::endl;
         if (!apiDendrite.fragments.empty()) {
             auto apiFragments = generateFragments(apiDendrite);
             auto apiDendriteSkel = new Dendrite();
@@ -274,6 +279,7 @@ namespace skelgenerator {
             reamingFragments += std::get<1>(resultApi);
         }
 
+        std::cout << "Apical" << std::endl;
         std::vector<std::vector<Section *>> basalsFragments;
         for (const auto &basalDedrite: basalDendrites) {
             basalsFragments.push_back(generateFragments(basalDedrite));
@@ -301,7 +307,6 @@ namespace skelgenerator {
 
         std::vector<spineSet> basalsSpines;
         for (const auto &basal:basalDendrites) {
-            std::cout << "-------------------------- Basal ------------------------" << std::endl;
             auto spineSet = generateSpines(basal);
             this->spines.insert(spineSet.begin(),spineSet.end());
             basalsSpines.push_back(spineSet);
@@ -364,10 +369,21 @@ namespace skelgenerator {
         if (subDendrite->getRamification1() == nullptr && subDendrite->getRamification1() == nullptr) {
             return std::make_tuple(sec, mini, min);
         } else {
-            auto result1 = getPosSpine(subDendrite->getRamification1(), spine);
-            auto result2 = getPosSpine(subDendrite->getRamification2(), spine);
-            auto minDist1 = std::get<2>(result1);
-            auto minDist2 = std::get<2>(result2);
+            std::tuple<Section *, int, float> result1;
+            std::tuple<Section *, int, float> result2;
+            float minDist1 = 1000.0f;
+            float minDist2 = 1000.0f;
+
+            if (subDendrite->getRamification1() != nullptr) {
+                 result1 = getPosSpine(subDendrite->getRamification1(), spine);
+                 minDist1 = std::get<2>(result1);
+            }
+
+            if (subDendrite->getRamification2() != nullptr) {
+                result2 = getPosSpine(subDendrite->getRamification2(), spine);
+                minDist2 = std::get<2>(result2);
+            }
+
 
             if (min <= minDist1 && min <= minDist2) {
                 return std::make_tuple(sec, mini, min);
@@ -475,7 +491,7 @@ namespace skelgenerator {
         }
     }
 
-    void Neuron::removeDuplicates(int threshold){
+    void Neuron::removeDuplicates(float threshold){
         this->apical->removeDuplication(threshold);
         for (const auto& basal: basals) {
             basal->removeDuplication(threshold);
