@@ -42,12 +42,12 @@ common_find_package_post( )
 list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Core
         Qt5::Widgets
-        Eigen3
+        Eigen3::Eigen
         ${Boost_LIBRARIES}
         )
 
-add_subdirectory( SkelGeneratorUtil)
 add_subdirectory( SkelGenerator )
+add_subdirectory(SkelGeneratorUtil)
 
 if( MSVC )
     # Set SkelGenerator as startup project on Visual Studio, CMake v3.6

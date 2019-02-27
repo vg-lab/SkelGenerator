@@ -42,7 +42,6 @@ add_definitions("-w")
 
 if( MSVC )
     add_definitions( "-W4" )
-    add_definitions( -DSKELGENERATOR_STATIC )
 endif( )
 
 common_application( SkelGenerator )

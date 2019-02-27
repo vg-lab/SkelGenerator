@@ -23,7 +23,7 @@ set(SKELGENERATORUTIL_HEADERS
 
 set(SKELGENERATORUTIL_LINK_LIBRARIES
         ${Boost_LIBRARIES}
-
+        Eigen3::Eigen
         )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -34,7 +34,6 @@ add_definitions("-w")
 if (MSVC)
     add_definitions("/W4")
     # Static build
-    add_definitions(-DSKELGENERATORUTIL_STATIC)
 endif ()
 
 

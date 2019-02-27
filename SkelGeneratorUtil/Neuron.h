@@ -5,6 +5,8 @@
 #ifndef SKELGENERATOR_NEURON_H
 #define SKELGENERATOR_NEURON_H
 
+#include <skelgenerator/api.h>
+
 #include <set>
 #include "SamplePoint.h"
 #include "Dendrite.h"
@@ -16,7 +18,7 @@ namespace skelgenerator {
      *  Once the skeleton is processed it only contains sections.
     **/
 
-    class Neuron {
+    class SKELGENERATOR_API Neuron {
         SamplePoint soma;
         Dendrite* apical;
         std::vector<Dendrite *> basals;
