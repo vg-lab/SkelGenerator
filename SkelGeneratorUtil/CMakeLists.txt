@@ -23,7 +23,7 @@ set(SKELGENERATORUTIL_HEADERS
 
 set(SKELGENERATORUTIL_LINK_LIBRARIES
         ${Boost_LIBRARIES}
-        Eigen3::Eigen
+        Eigen3
         )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
