@@ -160,10 +160,10 @@ namespace skelgenerator {
             }
 
 
-            TConn *firstCoon;
+            TConn *firstCoon = nullptr;
             int min = fragment->size();
             for (auto &coon : conns) {
-                if (coon.p1 < min) {
+                if (coon.p1 <= min) {
                     firstCoon = &coon;
                     min = coon.p1;
                 }
