@@ -31,7 +31,7 @@ include_directories(${PROJECT_BINARY_DIR}/include ${PROJECT_BINARY_DIR}/src)
 add_definitions("-w")
 
 if (MSVC)
-    add_definitions("/W4")
+    add_definitions("-W4")
     # Static build
 endif ()
 
