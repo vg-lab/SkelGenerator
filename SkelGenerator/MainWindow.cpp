@@ -8,7 +8,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <cstring>
 #include <iostream>
-#include <skelgeneratorutil/Neuron.h>
+#include <SkelGeneratorUtil/Neuron.h>
 
 namespace skelgenerator {
     MainWindow::MainWindow(QWidget *parent) :
