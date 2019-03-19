@@ -55,7 +55,7 @@ namespace skelgenerator {
 
     Section *Neuron::getFragment(const TFragment &fragment) {
         auto sectionSkel = new Section(fragment.nombre);
-        for (int cir = 6; cir < fragment.nCircles - 6; cir++) {
+        for (int cir = 3; cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
@@ -337,6 +337,7 @@ namespace skelgenerator {
             auto sec = std::get<0>(result);
             auto pos = std::get<1>(result);
             auto min = std::get<2>(result);
+
             if (min < connectionThreshold) {
                 if (pos == 0) {
                     sec->addPoint(spine, 1);
@@ -344,7 +345,7 @@ namespace skelgenerator {
                     sec->addPoint(spine, pos);
                 }
             } else {
-                std::cout << "Error espina no conectada" << std::endl;
+                std::cout << "Error espina no conectada: Dist " << min << std::endl;
             }
         }
     }
@@ -367,7 +368,7 @@ namespace skelgenerator {
             }
         }
 
-        if (subDendrite->getRamification1() == nullptr && subDendrite->getRamification1() == nullptr) {
+        if (subDendrite->getRamification1() == nullptr && subDendrite->getRamification2() == nullptr) {
             return std::make_tuple(sec, mini, min);
         } else {
             std::tuple<Section *, int, float> result1;

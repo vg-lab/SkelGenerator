@@ -66,7 +66,7 @@ namespace skelgenerator {
 
         std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, Spine *spine);
 
-        void removeDuplicates(float threshold = 0.2);
+        void removeDuplicates(float threshold = 0.75);
 
 
     };
