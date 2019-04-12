@@ -38,10 +38,4 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories( ${PROJECT_BINARY_DIR}/include ${PROJECT_BINARY_DIR}/src )
 include_directories( ${EIGEN_INCLUDE_DIR})
 
-add_definitions("-w")
-
-if( MSVC )
-    add_definitions( "-W4" )
-endif( )
-
 common_application( SkelGenerator )
