@@ -8,13 +8,13 @@
 
 namespace skelgenerator {
 
-    std::ostream &operator<<(std::ostream &Str, const SamplePoint &point) {
+    std::ostream &operator<<(std::ostream &Str, const SamplePoint & /* point */ ) {
         return Str;
     }
 
-    SamplePoint::SamplePoint(Eigen::Vector3d& point, float r) {
-        this->point = point;
-        this->r = r;
+    SamplePoint::SamplePoint(Eigen::Vector3d& point_, float r_) {
+        this->point = point_;
+        this->r = r_;
     }
 
     const Eigen::Vector3d &SamplePoint::getPoint() const {

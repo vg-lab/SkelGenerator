@@ -19,10 +19,10 @@
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, float connectionThreshold) {
+    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->incorrectConecctions = false;
-        this->connectionThreshold = connectionThreshold;
+        this->connectionThreshold = connectionThreshold_;
         this->apical = nullptr;
         TDendrite apiDendrite = {};
         if (!apiFile.empty()) {
@@ -55,7 +55,7 @@ namespace skelgenerator {
 
     Section *Neuron::getFragment(const TFragment &fragment) {
         auto sectionSkel = new Section(fragment.nombre);
-        for (int cir = 3; cir < fragment.nCircles; cir++) {
+        for (unsigned int cir = 3; cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
@@ -73,7 +73,7 @@ namespace skelgenerator {
 
     std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section *> fragments) {
         std::set<Section *> reaminFragments;
-        for (int i = 0; i < fragments.size(); i++) {
+        for (size_t i = 0; i < fragments.size(); i++) {
             reaminFragments.insert(fragments[i]);
         }
 
@@ -93,10 +93,10 @@ namespace skelgenerator {
             int minPoint2 = 0;
             for (int i = 0; i < fragment->size(); i++) {
                 auto p1 = (*fragment)[i]->getPoint();
-                auto p1r = (*fragment)[i]->getRadius();
+                //auto p1r = (*fragment)[i]->getRadius();
                 for (int j = 0; j < anotherFragment->size(); j++) {
                     auto p2 = (*anotherFragment)[j]->getPoint();
-                    auto p2r =(*anotherFragment)[j]->getRadius();
+                    //auto p2r =(*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
 
                     if ( dist < minDistance ) {
@@ -308,31 +308,31 @@ namespace skelgenerator {
 
         std::vector<spineSet> basalsSpines;
         for (const auto &basal:basalDendrites) {
-            auto spineSet = generateSpines(basal);
-            this->spines.insert(spineSet.begin(),spineSet.end());
-            basalsSpines.push_back(spineSet);
+            auto spineSet_ = generateSpines(basal);
+            this->spines.insert(spineSet_.begin(),spineSet_.end());
+            basalsSpines.push_back(spineSet_);
         }
 
 
-        for (int i = 0; i < basalsSpines.size(); i++) {
+        for (size_t i = 0; i < basalsSpines.size(); i++) {
             addSpines(basals[i], basalsSpines[i]);
         }
     }
 
 
     spineSet Neuron::generateSpines(const TDendrite &dendrite) {
-        spineSet spines;
+        spineSet spines_;
         for (const auto &spine:dendrite.spines) {
             auto spineSkel = new Spine(spine);
-            spines.insert(spineSkel);
+            spines_.insert(spineSkel);
         }
-        return spines;
+        return spines_;
 
     }
 
-    void Neuron::addSpines(Dendrite *dendrite, spineSet &spines) {
+    void Neuron::addSpines(Dendrite *dendrite, spineSet &spines_) {
         std::vector<std::tuple<Spine *, Section *, int, float>> spinesToInsert;
-        for (auto spine :spines) {
+        for (auto spine :spines_) {
             auto result = getPosSpine(dendrite->getDendrite(), spine);
             auto sec = std::get<0>(result);
             auto pos = std::get<1>(result);
@@ -395,6 +395,12 @@ namespace skelgenerator {
                 return result2;
             }
         }
+
+	// WAR to avoid warnings (TODO: fix this)
+	// This statemets should never be reached
+	assert(false);
+	return std::make_tuple(nullptr, (unsigned int ) 0, 0.0f);
+ 
     }
 
     int Neuron::getReamingSegments() const {
@@ -445,14 +451,14 @@ namespace skelgenerator {
 
     }
 
-    std::string Neuron::to_swc(bool spines) {
+    std::string Neuron::to_swc(bool spines_) {
         int counter = 1;
         std::stringstream ssSkel;
         std::stringstream ssSpines;
         ssSkel << this->soma.to_swc(counter, -1, 1) << std::endl;
-        ssSkel << this->apical->to_swc(counter,spines);
+        ssSkel << this->apical->to_swc(counter,spines_);
         for (const auto& basal: this->basals) {
-            ssSkel << basal->to_swc(counter,spines);
+            ssSkel << basal->to_swc(counter,spines_);
         }
         return ssSkel.str();
 

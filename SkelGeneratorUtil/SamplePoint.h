@@ -22,6 +22,8 @@ namespace skelgenerator {
 
         SamplePoint() = default;
 
+	virtual ~SamplePoint() {}
+	
         const Eigen::Vector3d &getPoint() const;
 
         float getRadius() const;

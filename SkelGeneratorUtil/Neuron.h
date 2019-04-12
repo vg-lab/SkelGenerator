@@ -29,7 +29,7 @@ namespace skelgenerator {
         bool incorrectConecctions;
 
     public:
-        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, float connectionThreshold = 3);
+        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles, float connectionThreshold_ = 3);
 
         std::string to_asc();
         std::string to_swc(bool spines = false);

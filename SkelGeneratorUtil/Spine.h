@@ -40,6 +40,8 @@ namespace skelgenerator {
 
         explicit Spine(TSpine spine3D);
 
+        virtual ~Spine() {};
+
         const Eigen::Vector3d &getInsertPoint() const;
 
         const std::string &getName() const;

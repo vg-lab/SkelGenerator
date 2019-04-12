@@ -9,8 +9,8 @@
 namespace skelgenerator {
 
 
-    Section::Section(const std::string &name) {
-        this->name = name;
+    Section::Section(const std::string &name_) {
+        this->name = name_;
 
     }
 
@@ -47,7 +47,7 @@ namespace skelgenerator {
             ss << tab  << "Empty Section: " << this->name;
         }
         ss << tab << "; " << this->name << std::endl;
-        for (int i = init;i< points.size(); i++) {
+        for (size_t i = init;i< points.size(); i++) {
             auto point = points[i];
             ss << point->to_asc(tab) <<"\t;\t" << counter << std::endl;
             counter++;
