@@ -8,12 +8,12 @@ namespace skelgenerator {
 
 
 
-    void Dendrite::setDendtype(DENDTYPE dendtype) {
-            Dendrite::dendtype = dendtype;
+    void Dendrite::setDendtype(DENDTYPE dendtype_) {
+            Dendrite::dendtype = dendtype_;
     }
 
-    void Dendrite::setDendrite(SubDendrite *dendrite) {
-        Dendrite::dendrite = dendrite;
+    void Dendrite::setDendrite(SubDendrite *dendrite_) {
+        Dendrite::dendrite = dendrite_;
     }
 
     std::string Dendrite::to_asc(std::string tab, int init) {

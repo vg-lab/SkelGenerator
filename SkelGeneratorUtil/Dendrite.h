@@ -14,7 +14,7 @@
 
 namespace skelgenerator {
 
-    typedef enum DENDTYPE {
+    enum DENDTYPE {
         APICAL, BASAL
     };
 

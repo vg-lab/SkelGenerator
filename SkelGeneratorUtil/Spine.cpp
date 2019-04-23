@@ -10,12 +10,12 @@ namespace skelgenerator {
 
 int Spine::counter = 0;
 
-    Spine::Spine(TSpine spine3D) : SamplePoint() {
-        this->spine3D = spine3D;
+    Spine::Spine(TSpine spine3D_) : SamplePoint() {
+        this->spine3D = spine3D_;
         this->id = counter;
         counter++;
-        for (const auto &shape: spine3D.shapes) {
-            for (int cir = 0; cir < shape.nCircles; cir++) {
+        for (const auto &shape: spine3D_.shapes) {
+            for (unsigned int cir = 0; cir < shape.nCircles; cir++) {
                 auto medio = Eigen::Vector3d(0, 0, 0);
                 for (int i = 0; i < 17; i++) {
                     medio += shape.points[cir * 17 + i];
@@ -29,8 +29,8 @@ int Spine::counter = 0;
 
     }
 
-    void Spine::addPoint(Eigen::Vector3d point, float radius) {
-        auto p = SamplePoint(point, radius);
+    void Spine::addPoint(Eigen::Vector3d point_, float radius) {
+        auto p = SamplePoint(point_, radius);
         this->medialAxis.push_back(p);
     }
 
@@ -89,7 +89,7 @@ int Spine::counter = 0;
     }
 
     void Spine::to_obj(const std::string &path, int nSpine) {
-        for (int i = 0; i < this->spine3D.shapes.size(); ++i) {
+        for (size_t i = 0; i < this->spine3D.shapes.size(); ++i) {
             std::string filePath = path +"/" +std::to_string(nSpine) +this->getName() + "-" + std::to_string(i)+".obj";
             shape_to_obj(filePath,i);
         }
@@ -151,7 +151,7 @@ int Spine::counter = 0;
            this ->medialAxis[0].getRadius() << " " << parent << std::endl;
         counter++;
 
-        for (int i=1; i < medialAxis.size();i++) {
+        for (size_t i=1; i < medialAxis.size();i++) {
             auto samplePoint = this->medialAxis[i];
             ss << std::setprecision(10) << counter << " " << type << " "  <<  std::fixed << samplePoint.getPoint()[0] <<
                " " << samplePoint.getPoint()[1] << " " << samplePoint.getPoint()[2] << " " <<

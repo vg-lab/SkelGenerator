@@ -6,12 +6,12 @@
 #include "SubDendrite.h"
 namespace skelgenerator {
 
-    void SubDendrite::setRamification1(SubDendrite *ramification1) {
-        SubDendrite::ramification1 = ramification1;
+    void SubDendrite::setRamification1(SubDendrite *ramification1_) {
+        SubDendrite::ramification1 = ramification1_;
     }
 
-    void SubDendrite::setRamification2(SubDendrite *ramification2) {
-        SubDendrite::ramification2 = ramification2;
+    void SubDendrite::setRamification2(SubDendrite *ramification2_) {
+        SubDendrite::ramification2 = ramification2_;
     }
 
     SubDendrite::SubDendrite(Section *section) {
