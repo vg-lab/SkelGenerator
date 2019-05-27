@@ -16,6 +16,7 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
+#define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
 namespace skelgenerator {
 
@@ -249,8 +250,8 @@ namespace skelgenerator {
         auto centerY = this->soma.getPoint()[1];
 
         for (int i = 0; i<360; i+=10) {
-            auto x = centerX + this->soma.getRadius() * cos(i);
-            auto y = centerY + this->soma.getRadius() * sin(i);
+            auto x = centerX + this->soma.getRadius() * cos(degreesToRadians(i));
+            auto y = centerY + this->soma.getRadius() * sin(degreesToRadians(i));
             Eigen::Vector3d point (x,y,this->soma.getPoint()[2]);
             SamplePoint pointr(point,0.15f);
             ss << pointr.to_asc(tab) << std::endl;
