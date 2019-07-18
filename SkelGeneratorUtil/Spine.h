@@ -28,6 +28,8 @@ namespace skelgenerator {
     class Spine : public SamplePoint {
         /** The attributes inherited from SamplePoint are the endpoint and its radius **/
         std::vector<SamplePoint> medialAxis;
+
+    private:
         Eigen::Vector3d insertPoint;
         TSpine spine3D;
         unsigned int id;
@@ -56,11 +58,17 @@ namespace skelgenerator {
 
         void to_obj(const std::string &path,int i);
 
-        void to_obj_without_base (const std::string &path,int i);
+        std::string to_obj_without_base (const std::string &path,int i);
 
         void shape_to_obj(const std::string &path,int shapeIndex);
 
         std::string to_swc(int &counter, int parent, int type) override;
+
+        const std::vector<SamplePoint> &getMedialAxis() const;
+
+        std::vector<SamplePoint> getMedialAxisWithoutBase() const;
+
+        Eigen::Vector3d getSpineOrientation() const ;
 
     };
 

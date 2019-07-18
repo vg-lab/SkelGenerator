@@ -96,7 +96,7 @@ int Spine::counter = 0;
 
     }
 
-    void Spine::to_obj_without_base(const std::string &path, int nSpine) {
+    std::string Spine::to_obj_without_base(const std::string &path, int nSpine) {
         std::string filePath = path +"/" +std::to_string(nSpine) +this->getName()+".obj";
         if (this->spine3D.shapes.size() == 2) {
             auto shape = this->spine3D.shapes[1];
@@ -138,6 +138,7 @@ int Spine::counter = 0;
         } else  {
             shape_to_obj(filePath,0);
         }
+        return filePath;
 
 
     }
@@ -164,5 +165,43 @@ int Spine::counter = 0;
         return ss.str();
 
 
+    }
+
+    const std::vector<SamplePoint> &Spine::getMedialAxis() const {
+        return medialAxis;
+    }
+
+    std::vector<SamplePoint> Spine::getMedialAxisWithoutBase() const {
+        if (this->spine3D.shapes.size() == 1) {
+            return medialAxis;
+        } else {
+            int medialPoints = this->spine3D.shapes[0].nCircles;
+            std::vector<SamplePoint> medialAxisAux (this->medialAxis);
+            medialAxisAux.erase(medialAxisAux.begin(), medialAxisAux.begin() + medialPoints);
+            return medialAxisAux;
+        }
+    }
+
+    Eigen::Vector3d Spine::getSpineOrientation() const {
+        TShape shape;
+
+        if (this->spine3D.shapes.size() == 2) {
+            shape = this->spine3D.shapes[1];
+        } else {
+            shape = this->spine3D.shapes[0];
+        }
+
+        Eigen::Vector3d closePoint(0,0,0);
+        for (int i = 0; i < 17; i++ ){
+            closePoint += shape.points[i];
+        }
+        closePoint /= 17;
+
+        Eigen::Vector3d v1 = closePoint - shape.points[0];
+        Eigen::Vector3d v2 = closePoint - shape.points[1];
+
+        Eigen::Vector3d normal = v2.cross(v1);
+        normal.normalize();
+        return normal;
     }
 }

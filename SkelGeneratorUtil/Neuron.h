@@ -26,6 +26,8 @@ namespace skelgenerator {
         int reamingSegments;
         int reamingSpines;
         spineSet spines;
+
+    private:
         bool incorrectConecctions;
 
     public:
@@ -41,6 +43,8 @@ namespace skelgenerator {
         int getReamingSegments() const;
 
         int getReamingSpines() const;
+
+        const spineSet &getSpines() const;
 
     private:
         std::vector<Section *> generateFragments(TDendrite dendrite);

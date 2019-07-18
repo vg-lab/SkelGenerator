@@ -507,6 +507,10 @@ namespace skelgenerator {
         }
     }
 
+    const spineSet &Neuron::getSpines() const {
+        return spines;
+    }
+
 
 }
 
