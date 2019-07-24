@@ -28,4 +28,8 @@ set(SKELGENERATORUTIL_LINK_LIBRARIES
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/include ${PROJECT_BINARY_DIR}/src)
 
+if (MSVC)
+    add_definitions(-D_USE_MATH_DEFINES)
+endif ()
+
 common_library(skelgeneratorutil)

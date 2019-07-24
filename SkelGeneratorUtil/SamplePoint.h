@@ -5,6 +5,8 @@
 #ifndef SKELGENERATOR_SAMPLEDATA_H
 #define SKELGENERATOR_SAMPLEDATA_H
 
+#include <skelgenerator/api.h>
+
 
 #include <ostream>
 #include <Eigen/Dense>
@@ -24,7 +26,7 @@ namespace skelgenerator {
 
 	virtual ~SamplePoint() {}
 	
-        const Eigen::Vector3d &getPoint() const;
+        SKELGENERATOR_API const Eigen::Vector3d &getPoint() const;
 
         float getRadius() const;
 

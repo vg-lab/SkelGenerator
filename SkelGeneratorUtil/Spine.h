@@ -5,6 +5,8 @@
 #ifndef SKELGENERATOR_SPINE_H
 #define SKELGENERATOR_SPINE_H
 
+#include <skelgenerator/api.h>
+
 #include "SamplePoint.h"
 #include <unordered_set>
 #include <vector>
@@ -25,7 +27,7 @@ namespace skelgenerator {
     } TSpine;
 
 
-    class Spine : public SamplePoint {
+    class SKELGENERATOR_API Spine : public SamplePoint {
         /** The attributes inherited from SamplePoint are the endpoint and its radius **/
         std::vector<SamplePoint> medialAxis;
 
