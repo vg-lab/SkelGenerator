@@ -501,7 +501,9 @@ namespace skelgenerator {
     }
 
     void Neuron::removeDuplicates(float threshold){
-        this->apical->removeDuplication(threshold);
+        if (this->apical != nullptr) {
+            this->apical->removeDuplication(threshold);
+        }
         for (const auto& basal: basals) {
             basal->removeDuplication(threshold);
         }
