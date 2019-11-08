@@ -54,7 +54,7 @@ int Spine::counter = 0;
         ss << tab << "<\t(Class 4 \"none\")" << std::endl;
         ss << tab << "(Color Red)" << std::endl;
         ss << tab << "(Generated 0)" << std::endl;
-        ss << tab << "( " << this->point[0] << "\t" << this->point[1] << "\t" << this->point[2]
+        ss << std::setprecision(10) << std::fixed <<  tab << "( " << this->point[0] << "\t" << this->point[1] << "\t" << this->point[2]
            << "\t" << this->r << " )>\t;" << this->getName();
         return ss.str();
     }
