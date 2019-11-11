@@ -26,6 +26,11 @@ namespace skelgenerator {
         std::vector<TShape> shapes;
     } TSpine;
 
+    typedef struct {
+        std::vector<Eigen::Vector3d> points;
+        std::vector<std::vector<int>> faces;
+    } TSpineImaris;
+
 
     class SKELGENERATOR_API Spine : public SamplePoint {
         /** The attributes inherited from SamplePoint are the endpoint and its radius **/

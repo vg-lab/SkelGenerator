@@ -106,7 +106,7 @@ namespace skelgenerator {
                         faces.push_back(currentFace);
                         currentFace.clear();
                     } else {
-                        std::string coord = line.substr(0,line.size()-1);
+                        std::string coord = line.substr(0, line.size() - 1);
                         currentFace.push_back(std::stoi(coord));
                     }
                 }
@@ -118,14 +118,12 @@ namespace skelgenerator {
     }
 
 
-
-
-    TDendrite VRMLReader::readVrmlApical(const std::string& apiFile) {
+    TDendrite VRMLReader::readVrmlApical(const std::string &apiFile) {
         TDendrite dendrite = TDendrite();
         std::string line;
         std::ifstream file(apiFile);
 
-        if(file.is_open()) {
+        if (file.is_open()) {
 
         }
 
@@ -134,13 +132,13 @@ namespace skelgenerator {
             if (line.find("FilamentSegment6") != std::string::npos) {
                 dendrite.fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
-                dendrite.spines.push_back(parseSpine(line,file));
+                dendrite.spines.push_back(parseSpine(line, file));
             }
         }
         return dendrite;
     }
 
-    std::vector<skelgenerator::TDendrite> VRMLReader::readBasalFile(const std::string& basalFile) {
+    std::vector<skelgenerator::TDendrite> VRMLReader::readBasalFile(const std::string &basalFile) {
         std::vector<TDendrite> dendrites;
         std::string line;
         std::ifstream file(basalFile);
@@ -160,11 +158,80 @@ namespace skelgenerator {
                 }
                 dendrites[index].fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
-                dendrites[index].spines.push_back(parseSpine(line,file));
+                dendrites[index].spines.push_back(parseSpine(line, file));
             }
         }
         return dendrites;
     }
 
+    std::vector<skelgenerator::TSpineImaris> VRMLReader::readImarisSpines(const std::string &imarisFile) {
+        std::vector<skelgenerator::TSpineImaris> spines;
+        std::string line;
+        std::ifstream file(imarisFile);
 
+        while (file >> line) {
+            if (line.find("bpSurfacesViewerInventor") != std::string::npos) {
+                spines.push_back(parseImarisSpine(file));
+            }
+        }
+        return spines;
+    }
+
+    TSpineImaris VRMLReader::parseImarisSpine(std::ifstream &file) {
+        std::string line;
+        std::vector<Eigen::Vector3d> points;
+        std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+        while (file >> line) {
+            if (line.find("point") != std::string::npos) {
+                file >> line; // Eliminamos el [ del atributo point
+                float point[3];// extructura auxiliar par ir alamacenando los puntos
+                int nCoords = 0;
+
+                while (file >> line) {
+                    if (line.find(']') ==
+                        std::string::npos) { // si encontramos el el final de los puntos construimos el segmento y salimos de los bucles
+                        if (line.at(line.length() - 1) == ',') {
+                            line = line.substr(0, line.length() - 1);
+                        }
+                        point[nCoords] = std::stof(line);
+                        nCoords++;
+                        if (nCoords == 3) {
+                            Eigen::Vector3d vec(point[0], point[1], point[2]);
+                            points.emplace_back(vec);
+                            nCoords = 0;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+
+        while (file >> line) {
+            if (line.find("coordIndex") != std::string::npos) {
+                file >> line; // ELiminamos el [ de la entrada
+                std::vector<std::vector<int>> faces;
+                std::vector<int> currentFace;
+                while (file >> line) {
+                    if (line.find(']') != std::string::npos) {
+                        return {points, faces};
+                    } else if (line.find("-1") != std::string::npos) {
+                        faces.push_back(currentFace);
+                        currentFace.clear();
+                    } else {
+                        std::string coord = line.substr(0, line.size() - 1);
+                        currentFace.push_back(std::stoi(coord));
+                    }
+                }
+                break;
+            }
+        }
+        return {};
+    }
 }
+
+
+
+

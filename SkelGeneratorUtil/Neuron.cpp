@@ -4,23 +4,22 @@
 
 
 #include "Neuron.h"
-#include "VRMLReader.h"
 #include "Section.h"
 #include "Types.h"
 #include "Spine.h"
 #include <Eigen/Dense>
-#include <stack>
 #include <set>
 #include <unordered_set>
 #include <iostream>
-#include <fstream>
 #include <boost/filesystem.hpp>
+#include <iomanip>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, float connectionThreshold_) {
+    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, const std::string &imarisFile,
+                   float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->incorrectConecctions = false;
         this->connectionThreshold = connectionThreshold_;
@@ -34,6 +33,10 @@ namespace skelgenerator {
         for (const auto &basalFile : basalFiles) {
             auto thisBasal = VRMLReader::readBasalFile(basalFile);
             basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
+        }
+
+        if (!imarisFile.empty()) {
+            this->imarisSpines = VRMLReader::readImarisSpines(imarisFile);
         }
 
 
@@ -63,9 +66,9 @@ namespace skelgenerator {
             }
             medio = medio / 17;
             float radius = -1;
-            for (int i =0 ; i < 17; i++) {
-                 auto r = (medio - fragment.points[cir * 17 + i]).norm();
-                 radius = radius < r ? r : radius;
+            for (int i = 0; i < 17; i++) {
+                auto r = (medio - fragment.points[cir * 17 + i]).norm();
+                radius = radius < r ? r : radius;
             }
             sectionSkel->addPoint(medio, radius);
         }
@@ -100,7 +103,7 @@ namespace skelgenerator {
                     //auto p2r =(*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
 
-                    if ( dist < minDistance ) {
+                    if (dist < minDistance) {
                         minDistance = dist;
                         minPoint1 = i;
                         minPoint2 = j;
@@ -125,7 +128,6 @@ namespace skelgenerator {
                 conn.p1 = (fragment->size() - conn.p1);
             }
         }
-
 
 
         fragment->trim(initPoint);
@@ -249,11 +251,11 @@ namespace skelgenerator {
         auto centerX = this->soma.getPoint()[0];
         auto centerY = this->soma.getPoint()[1];
 
-        for (int i = 0; i<360; i+=10) {
+        for (int i = 0; i < 360; i += 10) {
             auto x = centerX + this->soma.getRadius() * cos(degreesToRadians(i));
             auto y = centerY + this->soma.getRadius() * sin(degreesToRadians(i));
-            Eigen::Vector3d point (x,y,this->soma.getPoint()[2]);
-            SamplePoint pointr(point,0.15f);
+            Eigen::Vector3d point(x, y, this->soma.getPoint()[2]);
+            SamplePoint pointr(point, 0.15f);
             ss << pointr.to_asc(tab) << std::endl;
         }
 
@@ -301,16 +303,16 @@ namespace skelgenerator {
 
 
     void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-       if (!apiDendrite.fragments.empty()) {
+        if (!apiDendrite.fragments.empty()) {
             auto apiSpines = generateSpines(apiDendrite);
-            this->spines.insert(apiSpines.begin(),apiSpines.end());
+            this->spines.insert(apiSpines.begin(), apiSpines.end());
             addSpines(apical, apiSpines);
         }
 
         std::vector<spineSet> basalsSpines;
         for (const auto &basal:basalDendrites) {
             auto spineSet_ = generateSpines(basal);
-            this->spines.insert(spineSet_.begin(),spineSet_.end());
+            this->spines.insert(spineSet_.begin(), spineSet_.end());
             basalsSpines.push_back(spineSet_);
         }
 
@@ -378,8 +380,8 @@ namespace skelgenerator {
             float minDist2 = 1000.0f;
 
             if (subDendrite->getRamification1() != nullptr) {
-                 result1 = getPosSpine(subDendrite->getRamification1(), spine);
-                 minDist1 = std::get<2>(result1);
+                result1 = getPosSpine(subDendrite->getRamification1(), spine);
+                minDist1 = std::get<2>(result1);
             }
 
             if (subDendrite->getRamification2() != nullptr) {
@@ -397,11 +399,11 @@ namespace skelgenerator {
             }
         }
 
-	// WAR to avoid warnings (TODO: fix this)
-	// This statemets should never be reached
-	assert(false);
-	return std::make_tuple(nullptr, (unsigned int ) 0, 0.0f);
- 
+        // WAR to avoid warnings (TODO: fix this)
+        // This statemets should never be reached
+        assert(false);
+        return std::make_tuple(nullptr, (unsigned int) 0, 0.0f);
+
     }
 
     int Neuron::getReamingSegments() const {
@@ -424,7 +426,7 @@ namespace skelgenerator {
         auto Zplane = 0;
 
         auto somaRadius = 1000000;
-        Eigen::Vector3d somaCenter(0,0,0);
+        Eigen::Vector3d somaCenter(0, 0, 0);
 
         if (apical != nullptr) {
             auto secApical = apical->getDendrite()->getSec();
@@ -447,7 +449,7 @@ namespace skelgenerator {
             if ((firstPoint - somaCenter).norm() < somaRadius)
                 somaRadius = (firstPoint - somaCenter).norm();
         }
-        this->soma = SamplePoint(somaCenter,somaRadius);
+        this->soma = SamplePoint(somaCenter, somaRadius);
 
 
     }
@@ -457,9 +459,11 @@ namespace skelgenerator {
         std::stringstream ssSkel;
         std::stringstream ssSpines;
         ssSkel << this->soma.to_swc(counter, -1, 1) << std::endl;
-        ssSkel << this->apical->to_swc(counter,spines_);
-        for (const auto& basal: this->basals) {
-            ssSkel << basal->to_swc(counter,spines_);
+        if (this->apical != nullptr) {
+            ssSkel << this->apical->to_swc(counter, spines_);
+        }
+        for (const auto &basal: this->basals) {
+            ssSkel << basal->to_swc(counter, spines_);
         }
         return ssSkel.str();
 
@@ -468,14 +472,14 @@ namespace skelgenerator {
     void Neuron::spines_to_obj_with_base(std::string dirPath) {
         int i = 0;
 
-        if( !boost::filesystem::exists(dirPath) ) {
+        if (!boost::filesystem::exists(dirPath)) {
             boost::filesystem::create_directory(dirPath);
         } else {
             boost::filesystem::remove_all(dirPath);
             boost::filesystem::create_directory(dirPath);
         }
-        for (const auto& spine: this->spines){
-            spine->to_obj(dirPath,i);
+        for (const auto &spine: this->spines) {
+            spine->to_obj(dirPath, i);
             i++;
         }
 
@@ -488,23 +492,23 @@ namespace skelgenerator {
     void Neuron::spines_to_obj_without_base(std::string dirPath) {
         int i = 0;
 
-        if( !boost::filesystem::exists(dirPath) ) {
+        if (!boost::filesystem::exists(dirPath)) {
             boost::filesystem::create_directory(dirPath);
         } else {
             boost::filesystem::remove_all(dirPath);
             boost::filesystem::create_directory(dirPath);
         }
-        for (const auto& spine: this->spines){
-            spine->to_obj_without_base(dirPath,i);
+        for (const auto &spine: this->spines) {
+            spine->to_obj_without_base(dirPath, i);
             i++;
         }
     }
 
-    void Neuron::removeDuplicates(float threshold){
+    void Neuron::removeDuplicates(float threshold) {
         if (this->apical != nullptr) {
             this->apical->removeDuplication(threshold);
         }
-        for (const auto& basal: basals) {
+        for (const auto &basal: basals) {
             basal->removeDuplication(threshold);
         }
     }
@@ -513,8 +517,46 @@ namespace skelgenerator {
         return spines;
     }
 
+    bool Neuron::hasImarisSpines() const {
+        return false;
+    }
 
+    void Neuron::imarisSpinesToObj(std::string dirPath) {
+        if (!boost::filesystem::exists(dirPath)) {
+            boost::filesystem::create_directory(dirPath);
+        } else {
+            boost::filesystem::remove_all(dirPath);
+            boost::filesystem::create_directory(dirPath);
+        }
+
+        for (size_t i = 0; i < imarisSpines.size(); ++i) {
+            const TSpineImaris &imarisSpine = imarisSpines[i];
+            std::ofstream file;
+            std::string path = dirPath + "/" + std::to_string(i) + ".obj";
+            file.open(path, std::ios::out);
+
+            file << "#" << imarisSpine.points.size() << std::endl;
+            file << "#" << imarisSpine.faces.size() << std::endl;
+
+            for (const auto &v : imarisSpine.points) {
+                file << std::setprecision(5) << "v " << v[0] << " " << v[1] << " " << v[2] << std::endl;
+            }
+
+            for (const auto &face: imarisSpine.faces) {
+                file << "f ";
+                for (size_t j = 0; j < face.size(); j++) {
+                    file << face[j] + 1 << " ";
+                }
+                file << std::endl;
+            }
+
+            file.close();
+        }
+    }
 }
+
+
+
 
 
 

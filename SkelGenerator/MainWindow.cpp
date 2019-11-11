@@ -196,7 +196,7 @@ namespace skelgenerator {
         outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
         bool ignore = false;
         int newThreshold = connectionThreshold;
-        auto neuron= new Neuron(api, basals, connectionThreshold);
+        auto neuron= new Neuron(api, basals,"", connectionThreshold); //TODO
         int sobrantes = neuron->getReamingSegments();
         bool haveIncorrectConnection = neuron->isIncorrectConecctions();
         while ( (haveIncorrectConnection || sobrantes > 0) && !ignore) {
@@ -217,7 +217,7 @@ namespace skelgenerator {
             ignore = newThreshold < 0;
             if (!ignore) {
                 delete(neuron);
-                neuron = new Neuron(api, basals, newThreshold);
+                neuron = new Neuron(api, basals,"", newThreshold); //TODO
                 sobrantes = neuron->getReamingSegments();
                 haveIncorrectConnection = neuron->isIncorrectConecctions();
             }
