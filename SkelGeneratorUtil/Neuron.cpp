@@ -13,6 +13,7 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <iomanip>
+#include <fstream>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
