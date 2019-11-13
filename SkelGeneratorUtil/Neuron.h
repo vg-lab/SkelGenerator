@@ -20,33 +20,41 @@ namespace skelgenerator {
     **/
 
     class SKELGENERATOR_API Neuron {
+        std::string apiFile, imarisFile;
+        std::vector<std::string> basalFiles;
         SamplePoint soma;
         Dendrite* apical;
         std::vector<Dendrite *> basals;
         float connectionThreshold;
         int reamingSegments;
         int reamingSpines;
+        int numDendrites;
         spineSet spines;
         std::vector<TSpineImaris> imarisSpines;
-
-
     private:
         bool incorrectConecctions;
-
     public:
-        Neuron(std::string& apiFile,std::vector<std::string>& basalFiles,const std::string& imarisFile = std::string() , float connectionThreshold_ = 3);
 
+        Neuron(std::string& apiFile_, std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string() , float connectionThreshold_ = 3);
         std::string to_asc();
+
         std::string to_swc(bool spines = false);
         void spines_to_obj_with_base(std::string dirPath);
         void spines_to_obj_without_base(std::string dirPath);
         void imarisSpinesToObj(std::string dirPath);
-
         bool isIncorrectConecctions() const;
 
         int getReamingSegments() const;
 
         int getReamingSpines() const;
+
+        const std::vector<TSpineImaris> &getImarisSpines() const;
+
+        const std::string &getApiFile() const;
+
+        const std::string &getImarisFile() const;
+
+        const std::vector<std::string> &getBasalFiles() const;
 
         bool hasImarisSpines() const;
 

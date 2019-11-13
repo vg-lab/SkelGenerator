@@ -19,25 +19,32 @@
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile, std::vector<std::string> &basalFiles, const std::string &imarisFile,
+    Neuron::Neuron(std::string &apiFile_, std::vector<std::string> &basalFiles_, const std::string &imarisFile_,
                    float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
+        this->apiFile = apiFile_;
+        this->imarisFile = imarisFile_;
+        this->basalFiles = basalFiles_;
         this->incorrectConecctions = false;
         this->connectionThreshold = connectionThreshold_;
         this->apical = nullptr;
+        this->numDendrites = 0;
         TDendrite apiDendrite = {};
-        if (!apiFile.empty()) {
-            apiDendrite = VRMLReader::readVrmlApical(apiFile);
+        if (!apiFile_.empty()) {
+            apiDendrite = VRMLReader::readVrmlApical(apiFile_);
+            this->numDendrites++;
         }
 
         std::vector<TDendrite> basalDendrites;
-        for (const auto &basalFile : basalFiles) {
+        for (const auto &basalFile : basalFiles_) {
             auto thisBasal = VRMLReader::readBasalFile(basalFile);
             basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
         }
 
-        if (!imarisFile.empty()) {
-            this->imarisSpines = VRMLReader::readImarisSpines(imarisFile);
+        this->numDendrites += basalDendrites.size();
+
+        if (!imarisFile_.empty()) {
+            this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
         }
 
 
@@ -271,7 +278,6 @@ namespace skelgenerator {
 
     void Neuron::procesSkel(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         int reamingFragments = 0;
-        std::cout << "Apical" << std::endl;
         if (!apiDendrite.fragments.empty()) {
             auto apiFragments = generateFragments(apiDendrite);
             auto apiDendriteSkel = new Dendrite();
@@ -284,7 +290,6 @@ namespace skelgenerator {
             reamingFragments += std::get<1>(resultApi);
         }
 
-        std::cout << "Apical" << std::endl;
         std::vector<std::vector<Section *>> basalsFragments;
         for (const auto &basalDedrite: basalDendrites) {
             basalsFragments.push_back(generateFragments(basalDedrite));
@@ -416,41 +421,49 @@ namespace skelgenerator {
     }
 
     void Neuron::generateSoma() {
-        Eigen::Vector3d somaBasal(0, 0, 0);
-
-
-        for (auto &basal: this->basals) {
-            auto sec = basal->getDendrite()->getSec();
-            somaBasal += (*sec)[0]->getPoint();
-        }
-
-        auto Zplane = 0;
-
-        auto somaRadius = 1000000;
-        Eigen::Vector3d somaCenter(0, 0, 0);
-
-        if (apical != nullptr) {
-            auto secApical = apical->getDendrite()->getSec();
-            Eigen::Vector3d somaApical = (*secApical)[0]->getPoint();
-            Zplane += somaApical[2];
-
-            somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
-
-            if ((somaApical - somaCenter).norm() < somaRadius) {
-                somaRadius = (somaApical - somaCenter).norm();
+        if (numDendrites == 1) { //Special case only 1 dendrite not have any information thus the soma is a placeholder.
+            auto firstSec = this->basals[0]->getDendrite()->getSec();
+            SamplePoint* firstPoint = (*firstSec)[0];
+            SamplePoint* secondPoint = (*firstSec)[1];
+            Eigen::Vector3d dir = firstPoint->getPoint() - secondPoint->getPoint();
+            dir.normalize();
+            Eigen::Vector3d somaCenter = firstPoint->getPoint() + dir ;
+            this->soma = SamplePoint(somaCenter,0.9);
+        } else {
+            Eigen::Vector3d somaBasal(0, 0, 0);
+            for (auto &basal: this->basals) {
+                auto sec = basal->getDendrite()->getSec();
+                somaBasal += (*sec)[0]->getPoint();
             }
 
-        } else {
-            somaCenter = somaBasal / this->basals.size();
-        }
+            auto Zplane = 0;
 
-        for (auto &basal:this->basals) {
-            Eigen::Vector3d firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
-            Zplane += firstPoint[2];
-            if ((firstPoint - somaCenter).norm() < somaRadius)
-                somaRadius = (firstPoint - somaCenter).norm();
+            auto somaRadius = 1000000;
+            Eigen::Vector3d somaCenter(0, 0, 0);
+
+            if (apical != nullptr) {
+                auto secApical = apical->getDendrite()->getSec();
+                Eigen::Vector3d somaApical = (*secApical)[0]->getPoint();
+                Zplane += somaApical[2];
+
+                somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
+
+                if ((somaApical - somaCenter).norm() < somaRadius) {
+                    somaRadius = (somaApical - somaCenter).norm();
+                }
+
+            } else {
+                somaCenter = somaBasal / this->basals.size();
+            }
+
+            for (auto &basal:this->basals) {
+                Eigen::Vector3d firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
+                Zplane += firstPoint[2];
+                if ((firstPoint - somaCenter).norm() < somaRadius)
+                    somaRadius = (firstPoint - somaCenter).norm();
+            }
+            this->soma = SamplePoint(somaCenter, somaRadius);
         }
-        this->soma = SamplePoint(somaCenter, somaRadius);
 
 
     }
@@ -519,7 +532,7 @@ namespace skelgenerator {
     }
 
     bool Neuron::hasImarisSpines() const {
-        return false;
+        return !imarisSpines.empty();
     }
 
     void Neuron::imarisSpinesToObj(std::string dirPath) {
@@ -553,6 +566,22 @@ namespace skelgenerator {
 
             file.close();
         }
+    }
+
+    const std::vector<TSpineImaris> &Neuron::getImarisSpines() const {
+        return imarisSpines;
+    }
+
+    const std::string &Neuron::getApiFile() const {
+        return apiFile;return apiFile;
+    }
+
+    const std::string &Neuron::getImarisFile() const {
+        return imarisFile;
+    }
+
+    const std::vector<std::string> &Neuron::getBasalFiles() const {
+        return basalFiles;
     }
 }
 
