@@ -169,20 +169,26 @@ namespace skelgenerator {
         std::string line;
         std::ifstream file(imarisFile);
 
-        while (file >> line) {
-            if (line.find("bpSurfacesViewerInventor") != std::string::npos) {
-                spines.push_back(parseImarisSpine(file));
-            }
-        }
-        return spines;
+        auto test = parseImarisSpine(file);
+        return test;
+
+//        while (file >> line) {
+//            if (line.find("bpSurfacesViewerInventor") != std::string::npos) {
+//                auto groupSpines = parseImarisSpine(file);
+//                spines.insert(spines.begin(), groupSpines.begin(), groupSpines.end());
+//            }
+//        }
+//        return spines;
     }
 
-    TSpineImaris VRMLReader::parseImarisSpine(std::ifstream &file) {
+    std::vector<TSpineImaris> VRMLReader::parseImarisSpine(std::ifstream &file) {
         std::string line;
         std::vector<Eigen::Vector3d> points;
+        std::vector<TSpineImaris> spines;
         std::setlocale(LC_NUMERIC, "en_US.UTF-8");
         while (file >> line) {
             if (line.find("point") != std::string::npos) {
+                points.clear();
                 file >> line; // Eliminamos el [ del atributo point
                 float point[3];// extructura auxiliar par ir alamacenando los puntos
                 int nCoords = 0;
@@ -204,19 +210,14 @@ namespace skelgenerator {
                         break;
                     }
                 }
-                break;
-            }
-        }
-
-
-        while (file >> line) {
-            if (line.find("coordIndex") != std::string::npos) {
+            } else if (line.find("coordIndex") != std::string::npos) {
                 file >> line; // ELiminamos el [ de la entrada
                 std::vector<std::vector<int>> faces;
                 std::vector<int> currentFace;
                 while (file >> line) {
                     if (line.find(']') != std::string::npos) {
-                        return {points, faces};
+                        spines.push_back({points, faces});
+                        break;
                     } else if (line.find("-1") != std::string::npos) {
                         faces.push_back(currentFace);
                         currentFace.clear();
@@ -225,10 +226,9 @@ namespace skelgenerator {
                         currentFace.push_back(std::stoi(coord));
                     }
                 }
-                break;
             }
         }
-        return {};
+        return spines;
     }
 }
 

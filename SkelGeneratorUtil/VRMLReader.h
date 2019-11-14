@@ -25,7 +25,7 @@ namespace skelgenerator {
 
         static TShape parseShape(std::ifstream &file);
 
-        static TSpineImaris parseImarisSpine(std::ifstream &file);
+        static std::vector<TSpineImaris> parseImarisSpine(std::ifstream &file);
     };
 }
 
