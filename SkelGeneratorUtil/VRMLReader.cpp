@@ -230,6 +230,44 @@ namespace skelgenerator {
         }
         return spines;
     }
+
+    std::vector<std::vector<skelgenerator::SamplePoint>>
+    VRMLReader::readImarisSpinesLong(const std::string &longsFile) {
+        std::vector<std::vector<skelgenerator::SamplePoint>> spines;
+        std::vector<skelgenerator::SamplePoint> spine;
+        std::ifstream file(longsFile);
+        Eigen::Vector3d point;
+        double radius;
+        std::string line;
+        std::string previus;
+
+        while (file >> line) {
+            if (line.find("bpMeasurementPointsInventor") != std::string::npos) {
+                break;
+            }
+        }
+
+
+        while (file >> line) {
+            if (line.find("translation") != std::string::npos) {
+                file >> point[0];
+                file >> point[1];
+                file >> point[2];
+            } else if (line.find("radius") != std::string::npos) {
+                file >> radius;
+                spine.emplace_back(point, radius);
+            } else if (previus.find("USE")!= std::string::npos && line.find("bpMeasurementPointsShapeInventor") != std::string::npos) {
+                spine.emplace_back(point,radius);
+            } else if (line.find("bpMeasurementPointsInventor") != std::string::npos) {
+                spines.push_back(spine);
+                spine.clear();
+            }
+            previus = line;
+        }
+
+        spines.push_back(spine);
+        return spines;
+    }
 }
 
 

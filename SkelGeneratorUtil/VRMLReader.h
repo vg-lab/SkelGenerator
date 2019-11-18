@@ -17,6 +17,7 @@ namespace skelgenerator {
         static TDendrite readVrmlApical(const std::string& apiFile);
         static std::vector<TDendrite> readBasalFile(const std::string& basalFile);
         static std::vector<skelgenerator::TSpineImaris> readImarisSpines(const std::string& file);
+        static std::vector<std::vector<skelgenerator::SamplePoint>> readImarisSpinesLong(const std::string& longsFile);
 
     private:
         static TFragment parseFilament(const std::string &name, std::ifstream &file);
@@ -26,6 +27,7 @@ namespace skelgenerator {
         static TShape parseShape(std::ifstream &file);
 
         static std::vector<TSpineImaris> parseImarisSpine(std::ifstream &file);
+
     };
 }
 

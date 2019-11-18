@@ -31,11 +31,12 @@ namespace skelgenerator {
         int numDendrites;
         spineSet spines;
         std::vector<TSpineImaris> imarisSpines;
+        std::vector<std::vector<SamplePoint>> longsSpines;
     private:
         bool incorrectConecctions;
     public:
 
-        Neuron(std::string& apiFile_, std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string() , float connectionThreshold_ = 3);
+        Neuron(std::string& apiFile_, std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
         std::string to_asc();
 
         std::string to_swc(bool spines = false);
@@ -58,6 +59,8 @@ namespace skelgenerator {
 
         bool hasImarisSpines() const;
 
+        bool hasFilamentSpines() const;
+
         const spineSet &getSpines() const;
 
     private:
@@ -76,7 +79,7 @@ namespace skelgenerator {
 
         void generateSoma();
 
-        void procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+        void procesSpinesFilament(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
 
         spineSet generateSpines(const TDendrite &dendrite);
 
@@ -87,6 +90,7 @@ namespace skelgenerator {
         void removeDuplicates(float threshold = 0.75);
 
 
+        void procesSpinesLongs(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
     };
 }
 

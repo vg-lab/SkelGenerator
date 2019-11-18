@@ -55,6 +55,8 @@ namespace skelgenerator {
 
         const std::string &getName() const;
 
+        unsigned int getId() const;
+
         void addPoint(Eigen::Vector3d point, float radius);
 
         void calculatePoints();
@@ -77,6 +79,7 @@ namespace skelgenerator {
 
         Eigen::Vector3d getSpineOrientation() const ;
 
+        Spine(const std::vector<SamplePoint> &medialAxis_);
     };
 
 

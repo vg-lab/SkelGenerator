@@ -19,7 +19,7 @@
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile_, std::vector<std::string> &basalFiles_, const std::string &imarisFile_,
+    Neuron::Neuron(std::string &apiFile_, std::vector<std::string> &basalFiles_, const std::string &imarisFile_, const std::string& longsFile_,
                    float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->apiFile = apiFile_;
@@ -47,11 +47,16 @@ namespace skelgenerator {
             this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
         }
 
-
         procesSkel(apiDendrite, basalDendrites);
         removeDuplicates();
         generateSoma();
-        procesSpines(apiDendrite, basalDendrites);
+
+        if (!longsFile_.empty()) {
+            this->longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
+            procesSpinesLongs(apiDendrite, basalDendrites);
+        } else {
+            procesSpinesFilament(apiDendrite, basalDendrites);
+        }
 
     }
 
@@ -307,8 +312,34 @@ namespace skelgenerator {
         this->reamingSegments = reamingFragments;
     }
 
+    void Neuron::procesSpinesLongs(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
+        //Añadimos las espinas de filament.
+        if (!apiDendrite.fragments.empty()) {
+            auto apiSpines = generateSpines(apiDendrite);
+            this->spines.insert(apiSpines.begin(), apiSpines.end());
+        }
 
-    void Neuron::procesSpines(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
+        std::vector<spineSet> basalsSpines;
+        for (const auto &basal:basalDendrites) {
+            auto spineSet_ = generateSpines(basal);
+            this->spines.insert(spineSet_.begin(), spineSet_.end());
+        }
+
+        spineSet longSpinesSet;
+        for (const auto spine: this->longsSpines) {
+            longSpinesSet.insert(new Spine(spine));
+        }
+
+        if (apical != nullptr) {
+            addSpines(apical,longSpinesSet);
+        }
+
+        for (size_t i = 0; i < basals.size(); i++) {
+            addSpines(basals[i], longSpinesSet);
+        }
+    }
+
+    void Neuron::procesSpinesFilament(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         if (!apiDendrite.fragments.empty()) {
             auto apiSpines = generateSpines(apiDendrite);
             this->spines.insert(apiSpines.begin(), apiSpines.end());
@@ -354,7 +385,7 @@ namespace skelgenerator {
                     sec->addPoint(spine, pos);
                 }
             } else {
-                std::cout << "Error espina no conectada: Dist " << min << std::endl;
+                std::cout << "Error espina no conectada: Dist " << min << " id: " << spine->getId() << std::endl;
             }
         }
     }
@@ -368,7 +399,8 @@ namespace skelgenerator {
         for (int i = 0; i < sec->size(); i++) {
             auto skelSample = (*sec)[i];
             if (!skelSample->isSpine()) {
-                float dist = (insertPoint - (*sec)[i]->getPoint()).norm();
+                float dist = abs((insertPoint - (*sec)[i]->getPoint()).norm() - (*sec)[i]->getRadius());
+
 
                 if (dist < min) {
                     min = dist;
@@ -583,6 +615,12 @@ namespace skelgenerator {
     const std::vector<std::string> &Neuron::getBasalFiles() const {
         return basalFiles;
     }
+
+    bool Neuron::hasFilamentSpines() const {
+        return !spines.empty();
+    }
+
+
 }
 
 

@@ -29,6 +29,17 @@ int Spine::counter = 0;
 
     }
 
+    Spine::Spine(const std::vector<SamplePoint> &medialAxis_) {
+        this->medialAxis = medialAxis_;
+        this->id = counter;
+        counter++;
+        this->insertPoint = (*(medialAxis.end() - 1)).getPoint();
+        this->point = medialAxis[0].getPoint();
+        this->r = medialAxis[0].getRadius();
+
+
+    }
+
     void Spine::addPoint(Eigen::Vector3d point_, float radius) {
         auto p = SamplePoint(point_, radius);
         this->medialAxis.push_back(p);
@@ -204,4 +215,9 @@ int Spine::counter = 0;
         normal.normalize();
         return normal;
     }
+
+    unsigned int Spine::getId() const {
+        return id;
+    }
+
 }
