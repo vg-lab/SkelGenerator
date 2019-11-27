@@ -237,7 +237,7 @@ namespace skelgenerator {
         std::vector<skelgenerator::SamplePoint> spine;
         std::ifstream file(longsFile);
         Eigen::Vector3d point;
-        double radius;
+        float radius;
         std::string line;
         std::string previus;
 
