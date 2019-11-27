@@ -163,7 +163,7 @@ namespace skelgenerator {
             if (conns.size() == 2) { //Seccion perfecta con 2 ramificaciones
                 auto con1 = conns[0];
                 auto con2 = conns[1];
-                int dist = abs(con1.p1 - con2.p1);
+                int dist = std::abs(con1.p1 - con2.p1);
                 if (dist < 2 && (con1.p1 == fragment->size() - 1 || con2.p1 == fragment->size() - 1)) {
                     //std::cout << "Seccion" << std::endl;
                     auto subDendrite = new SubDendrite(fragment);
@@ -399,7 +399,7 @@ namespace skelgenerator {
         for (int i = 0; i < sec->size(); i++) {
             auto skelSample = (*sec)[i];
             if (!skelSample->isSpine()) {
-                float dist = abs((insertPoint - (*sec)[i]->getPoint()).norm() - (*sec)[i]->getRadius());
+                float dist = std::abs((insertPoint - (*sec)[i]->getPoint()).norm() - (*sec)[i]->getRadius());
 
 
                 if (dist < min) {
