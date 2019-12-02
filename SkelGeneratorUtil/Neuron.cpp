@@ -281,6 +281,31 @@ namespace skelgenerator {
         return ss.str();
     }
 
+    std::string Neuron::to_asc(std::vector<std::vector<Eigen::Vector3f>> contours) {
+        std::string tab;
+        std::stringstream ss;
+
+
+        for (const auto& contour: contours) {
+            ss << "(Soma " << std::endl;
+            ss << "\t" << "(Closed)" << std::endl;
+            ss << "\t" << "(FillDensity 0)" << std::endl;
+            ss << "\t" << "(MBFObjectType 5)" << std::endl;
+            for (const auto& point: contour) {
+                ss << "\t" << "(\t" << point[0] << "\t" << point[1] << "\t" << point[2] << ")";
+            }
+            ss << ")";
+         }
+
+        ss << ")" << std::endl;
+        if (this->apical != nullptr)
+            ss << this->apical->to_asc(tab, 0);
+        for (auto basal:this->basals) {
+            ss << basal->to_asc(tab, 0);
+        }
+        return ss.str();
+    }
+
     void Neuron::procesSkel(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         int reamingFragments = 0;
         if (!apiDendrite.fragments.empty()) {
@@ -619,8 +644,6 @@ namespace skelgenerator {
     bool Neuron::hasFilamentSpines() const {
         return !spines.empty();
     }
-
-
 }
 
 
