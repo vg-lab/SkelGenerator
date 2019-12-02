@@ -90,8 +90,8 @@ namespace skelgenerator {
 
         void removeDuplicates(float threshold = 0.75);
 
-
         void procesSpinesLongs(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+
     };
 }
 

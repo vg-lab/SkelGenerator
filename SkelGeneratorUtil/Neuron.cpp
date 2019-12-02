@@ -115,6 +115,7 @@ namespace skelgenerator {
                     auto p2 = (*anotherFragment)[j]->getPoint();
                     //auto p2r =(*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
+                    //dist = dist - p1r - p2r;
 
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -287,17 +288,16 @@ namespace skelgenerator {
 
 
         for (const auto& contour: contours) {
-            ss << "(Soma " << std::endl;
+            ss << "(\"Soma\" " << std::endl;
             ss << "\t" << "(Closed)" << std::endl;
             ss << "\t" << "(FillDensity 0)" << std::endl;
             ss << "\t" << "(MBFObjectType 5)" << std::endl;
             for (const auto& point: contour) {
-                ss << "\t" << "(\t" << point[0] << "\t" << point[1] << "\t" << point[2] << ")";
+                ss << "\t" << "(\t" << point[0] << "\t" << point[1] << "\t" << point[2] << ")" << std::endl;
             }
-            ss << ")";
+            ss << ")" << std::endl;
          }
 
-        ss << ")" << std::endl;
         if (this->apical != nullptr)
             ss << this->apical->to_asc(tab, 0);
         for (auto basal:this->basals) {
@@ -644,6 +644,8 @@ namespace skelgenerator {
     bool Neuron::hasFilamentSpines() const {
         return !spines.empty();
     }
+
+
 }
 
 
