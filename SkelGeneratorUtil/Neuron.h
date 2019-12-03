@@ -38,7 +38,7 @@ namespace skelgenerator {
 
         Neuron(std::string& apiFile_, std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
         std::string to_asc();
-        std::string to_asc(std::vector<std::vector<Eigen::Vector3f>> contours);
+        std::string to_asc(const std::vector<std::vector<Eigen::Vector3f>>& contours,const Eigen::Vector3f& displacement = {0,0,0});
 
         std::string to_swc(bool spines = false);
         void spines_to_obj_with_base(std::string dirPath);

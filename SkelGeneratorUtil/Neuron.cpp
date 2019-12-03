@@ -282,10 +282,9 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    std::string Neuron::to_asc(std::vector<std::vector<Eigen::Vector3f>> contours) {
+    std::string Neuron::to_asc(const std::vector<std::vector<Eigen::Vector3f>>& contours, const Eigen::Vector3f& displacement) {
         std::string tab;
         std::stringstream ss;
-
 
         for (const auto& contour: contours) {
             ss << "(\"Soma\" " << std::endl;
@@ -293,7 +292,7 @@ namespace skelgenerator {
             ss << "\t" << "(FillDensity 0)" << std::endl;
             ss << "\t" << "(MBFObjectType 5)" << std::endl;
             for (const auto& point: contour) {
-                ss << "\t" << "(\t" << point[0] << "\t" << point[1] << "\t" << point[2] << ")" << std::endl;
+                ss << "\t" << "(\t" << point[0] + displacement[0] << "\t" << point[1] + displacement[1] << "\t" << point[2] + displacement[2] << ")" << std::endl;
             }
             ss << ")" << std::endl;
          }
