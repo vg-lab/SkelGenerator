@@ -36,7 +36,8 @@ namespace skelgenerator {
         bool incorrectConecctions;
     public:
 
-        Neuron(std::string& apiFile_, std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
+        Neuron(const std::string& apiFile_,const  std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
+        void addSpinesLongs (const std::string& longsFile_);
         std::string to_asc();
         std::string to_asc(const std::vector<std::vector<Eigen::Vector3f>>& contours,const Eigen::Vector3f& displacement = {0,0,0});
 
@@ -64,6 +65,11 @@ namespace skelgenerator {
 
         const spineSet &getSpines() const;
 
+        static std::pair<Eigen::Vector3d,Eigen::Vector3d> getBB(const TFragment& fragment);
+        static float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
+
+
+
     private:
         std::vector<Section *> generateFragments(TDendrite dendrite);
 
@@ -90,7 +96,11 @@ namespace skelgenerator {
 
         void removeDuplicates(float threshold = 0.75);
 
-        void procesSpinesLongs(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+        void procesSpinesLongs();
+
+        //static std::pair<Eigen::Vector3d,Eigen::Vector3d> getBB(const TFragment& fragment);
+
+        //float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
 
     };
 }

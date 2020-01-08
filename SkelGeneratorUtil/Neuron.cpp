@@ -13,13 +13,14 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <iomanip>
-#include <fstream>
+#include <Eigen/SVD>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
 namespace skelgenerator {
 
-    Neuron::Neuron(std::string &apiFile_, std::vector<std::string> &basalFiles_, const std::string &imarisFile_, const std::string& longsFile_,
+    Neuron::Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_, const std::string &imarisFile_,
+                   const std::string &longsFile_,
                    float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
         this->apiFile = apiFile_;
@@ -52,12 +53,29 @@ namespace skelgenerator {
         generateSoma();
 
         if (!longsFile_.empty()) {
-            this->longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
-            procesSpinesLongs(apiDendrite, basalDendrites);
+            addSpinesLongs(longsFile_);
+
+            //Añadimos la geometria de las espinas de Filament.
+            if (!apiDendrite.fragments.empty()) {
+                auto apiSpines = generateSpines(apiDendrite);
+                this->spines.insert(apiSpines.begin(), apiSpines.end());
+            }
+
+            std::vector<spineSet> basalsSpines;
+            for (const auto &basal:basalDendrites) {
+                auto spineSet_ = generateSpines(basal);
+                this->spines.insert(spineSet_.begin(), spineSet_.end());
+            }
+
         } else {
             procesSpinesFilament(apiDendrite, basalDendrites);
         }
 
+    }
+
+    void Neuron::addSpinesLongs(const std::string &longsFile_) {
+        this->longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
+        procesSpinesLongs();
     }
 
     std::vector<Section *> Neuron::generateFragments(TDendrite dendrite) {
@@ -100,6 +118,7 @@ namespace skelgenerator {
 
     }
 
+
     SubDendrite *Neuron::computeSubDendrite(Section *fragment, int initPoint, std::set<Section *> &reamingFragments) {
         //std::cout << "Processing fragment: " << fragment->getName() << "\n" << std::flush;
         reamingFragments.erase(fragment);
@@ -110,12 +129,12 @@ namespace skelgenerator {
             int minPoint2 = 0;
             for (int i = 0; i < fragment->size(); i++) {
                 auto p1 = (*fragment)[i]->getPoint();
-                //auto p1r = (*fragment)[i]->getRadius();
+                auto p1r = (*fragment)[i]->getRadius();
                 for (int j = 0; j < anotherFragment->size(); j++) {
                     auto p2 = (*anotherFragment)[j]->getPoint();
-                    //auto p2r =(*anotherFragment)[j]->getRadius();
+                    auto p2r = (*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
-                    //dist = dist - p1r - p2r;
+                    dist = dist - p1r - p2r;
 
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -127,6 +146,7 @@ namespace skelgenerator {
 
 
             if (minDistance < connectionThreshold) {
+                std::cout << minDistance << std::endl;
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
                 conns.push_back(conn);
             }
@@ -251,7 +271,6 @@ namespace skelgenerator {
         }
     }
 
-
     std::string Neuron::to_asc() {
         std::string tab;
         std::stringstream ss;
@@ -282,20 +301,22 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    std::string Neuron::to_asc(const std::vector<std::vector<Eigen::Vector3f>>& contours, const Eigen::Vector3f& displacement) {
+    std::string
+    Neuron::to_asc(const std::vector<std::vector<Eigen::Vector3f>> &contours, const Eigen::Vector3f &displacement) {
         std::string tab;
         std::stringstream ss;
 
-        for (const auto& contour: contours) {
+        for (const auto &contour: contours) {
             ss << "(\"Soma\" " << std::endl;
             ss << "\t" << "(Closed)" << std::endl;
             ss << "\t" << "(FillDensity 0)" << std::endl;
             ss << "\t" << "(MBFObjectType 5)" << std::endl;
-            for (const auto& point: contour) {
-                ss << "\t" << "(\t" << point[0] + displacement[0] << "\t" << point[1] + displacement[1] << "\t" << point[2] + displacement[2] << ")" << std::endl;
+            for (const auto &point: contour) {
+                ss << "\t" << "(\t" << point[0] + displacement[0] << "\t" << point[1] + displacement[1] << "\t"
+                   << point[2] + displacement[2] << ")" << std::endl;
             }
             ss << ")" << std::endl;
-         }
+        }
 
         if (this->apical != nullptr)
             ss << this->apical->to_asc(tab, 0);
@@ -336,32 +357,21 @@ namespace skelgenerator {
         this->reamingSegments = reamingFragments;
     }
 
-    void Neuron::procesSpinesLongs(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-        //Añadimos las espinas de filament.
-        if (!apiDendrite.fragments.empty()) {
-            auto apiSpines = generateSpines(apiDendrite);
-            this->spines.insert(apiSpines.begin(), apiSpines.end());
-        }
-
-        std::vector<spineSet> basalsSpines;
-        for (const auto &basal:basalDendrites) {
-            auto spineSet_ = generateSpines(basal);
-            this->spines.insert(spineSet_.begin(), spineSet_.end());
-        }
-
+    void Neuron::procesSpinesLongs() {
         spineSet longSpinesSet;
         for (const auto spine: this->longsSpines) {
             longSpinesSet.insert(new Spine(spine));
         }
 
         if (apical != nullptr) {
-            addSpines(apical,longSpinesSet);
+            addSpines(apical, longSpinesSet);
         }
 
         for (size_t i = 0; i < basals.size(); i++) {
             addSpines(basals[i], longSpinesSet);
         }
     }
+
 
     void Neuron::procesSpinesFilament(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
         if (!apiDendrite.fragments.empty()) {
@@ -383,7 +393,6 @@ namespace skelgenerator {
         }
     }
 
-
     spineSet Neuron::generateSpines(const TDendrite &dendrite) {
         spineSet spines_;
         for (const auto &spine:dendrite.spines) {
@@ -393,6 +402,7 @@ namespace skelgenerator {
         return spines_;
 
     }
+
 
     void Neuron::addSpines(Dendrite *dendrite, spineSet &spines_) {
         std::vector<std::tuple<Spine *, Section *, int, float>> spinesToInsert;
@@ -413,7 +423,6 @@ namespace skelgenerator {
             }
         }
     }
-
 
     std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, Spine *spine) {
         const auto &insertPoint = spine->getInsertPoint();
@@ -479,12 +488,12 @@ namespace skelgenerator {
     void Neuron::generateSoma() {
         if (numDendrites == 1) { //Special case only 1 dendrite not have any information thus the soma is a placeholder.
             auto firstSec = this->basals[0]->getDendrite()->getSec();
-            SamplePoint* firstPoint = (*firstSec)[0];
-            SamplePoint* secondPoint = (*firstSec)[1];
+            SamplePoint *firstPoint = (*firstSec)[0];
+            SamplePoint *secondPoint = (*firstSec)[1];
             Eigen::Vector3d dir = firstPoint->getPoint() - secondPoint->getPoint();
             dir.normalize();
-            Eigen::Vector3d somaCenter = firstPoint->getPoint() + dir ;
-            this->soma = SamplePoint(somaCenter,0.9);
+            Eigen::Vector3d somaCenter = firstPoint->getPoint() + dir;
+            this->soma = SamplePoint(somaCenter, 0.9);
         } else {
             Eigen::Vector3d somaBasal(0, 0, 0);
             for (auto &basal: this->basals) {
@@ -629,7 +638,8 @@ namespace skelgenerator {
     }
 
     const std::string &Neuron::getApiFile() const {
-        return apiFile;return apiFile;
+        return apiFile;
+        return apiFile;
     }
 
     const std::string &Neuron::getImarisFile() const {
@@ -644,7 +654,83 @@ namespace skelgenerator {
         return !spines.empty();
     }
 
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> Neuron::getBB(const TFragment &fragment) {
+        Eigen::Vector3d center;
+        for (const auto &point: fragment.points) {
+            center += point;
+        }
+        center /= fragment.points.size();
 
+        Eigen::MatrixXd pointMatrix(fragment.points.size(), 3);
+        for (size_t i = 0; i < fragment.points.size(); i++) {
+            Eigen::Vector3d centeredPoint = fragment.points[i] - center;
+            pointMatrix.row(i) = centeredPoint;
+        }
+        std::cout << pointMatrix << std::endl;
+        auto covarianzeMatrix = pointMatrix.transpose() * pointMatrix;
+        std::cout << covarianzeMatrix << std::endl;
+
+        Eigen::BDCSVD<Eigen::MatrixXd> svd(covarianzeMatrix, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        auto u = svd.matrixU();
+        std::cout << u << std::endl;
+
+        Eigen::Matrix4d rotMatrix;
+        for (size_t i = 0; i < 3; i++) {
+            for (size_t j = 0; j < 3; j++) {
+                rotMatrix(i, j) = u(i, j);
+            }
+            rotMatrix(3, i) = 0;
+        }
+
+        rotMatrix(3, 0) = 0.0d;
+        rotMatrix(3, 1) = 0.0d;
+        rotMatrix(3, 2) = 0.0d;
+
+        rotMatrix(3, 3) = 1;
+
+        std::cout << rotMatrix << std::endl;
+
+        Eigen::Vector3d min = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
+                               std::numeric_limits<double>::max()};
+        Eigen::Vector3d max = {-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
+                               -std::numeric_limits<double>::max()};
+
+        for (const auto &point: fragment.points) {
+            auto auxPoint = point - center;
+            Eigen::Vector4d transformedPoint(auxPoint[0], auxPoint[1], auxPoint[2], 1);
+            transformedPoint = rotMatrix * transformedPoint;
+
+            min = min.cwiseMin(transformedPoint.head(3));
+            max = max.cwiseMax(transformedPoint.head(3));
+        }
+
+        return {min,max};
+    }
+
+    float Neuron::computeOverlap(const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB1,
+                                 const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB2) {
+
+        if (BB1.first[0] > BB2.second[0] || BB1.second[0] < BB2.first[0]){
+            return 0;
+        }
+
+        if (BB1.first[1] > BB2.second[1] || BB1.second[1] < BB2.first[1]) {
+            return 0;
+        }
+
+        if (BB1.first[2] > BB2.second[2] || BB1.second[2] < BB2.first[2]){
+            return 0;
+        }
+
+        auto min = BB1.second.cwiseMin(BB2.second);
+        auto max = BB1.first.cwiseMax(BB2.first);
+
+        auto interVolume = (min - max).prod();
+
+        double volume1 = (BB1.second - BB1.first).prod();
+       // double volume2 = (BB2.second - BB1.first).prod();
+        return interVolume/volume1;
+    }
 }
 
 
