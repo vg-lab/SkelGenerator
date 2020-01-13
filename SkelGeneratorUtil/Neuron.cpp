@@ -731,6 +731,14 @@ namespace skelgenerator {
        // double volume2 = (BB2.second - BB1.first).prod();
         return interVolume/volume1;
     }
+
+    void Neuron::addImarisSpines(const std::string& imarisFile_) {
+        this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
+    }
+
+    void Neuron::clearImarisSpines() {
+        this->imarisSpines.clear();
+    }
 }
 
 

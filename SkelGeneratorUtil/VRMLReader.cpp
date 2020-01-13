@@ -169,17 +169,13 @@ namespace skelgenerator {
         std::string line;
         std::ifstream file(imarisFile);
 
-        auto test = parseImarisSpine(file);
-        return test;
+        if (!file.is_open()) {
+            throw std::runtime_error("Can't open file: " + imarisFile);
+        }
 
-//        while (file >> line) {
-//            if (line.find("bpSurfacesViewerInventor") != std::string::npos) {
-//                auto groupSpines = parseImarisSpine(file);
-//                spines.insert(spines.begin(), groupSpines.begin(), groupSpines.end());
-//            }
-//        }
-//        return spines;
+        return parseImarisSpine(file);
     }
+
 
     std::vector<TSpineImaris> VRMLReader::parseImarisSpine(std::ifstream &file) {
         std::string line;
