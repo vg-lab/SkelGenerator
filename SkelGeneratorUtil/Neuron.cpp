@@ -14,12 +14,14 @@
 #include <boost/filesystem.hpp>
 #include <iomanip>
 #include <Eigen/SVD>
+#include <Eigen/Eigenvalues>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
 namespace skelgenerator {
 
-    Neuron::Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_, const std::string &imarisFile_,
+    Neuron::Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_,
+                   const std::string &imarisFile_,
                    const std::string &longsFile_,
                    float connectionThreshold_) {
         //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
@@ -43,6 +45,7 @@ namespace skelgenerator {
         }
 
         this->numDendrites += basalDendrites.size();
+
 
         if (!imarisFile_.empty()) {
             this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
@@ -79,6 +82,7 @@ namespace skelgenerator {
     }
 
     std::vector<Section *> Neuron::generateFragments(TDendrite dendrite) {
+        removeFragments(dendrite);
         std::vector<Section *> fragments;
         for (const auto &fragment : dendrite.fragments) {
             fragments.push_back(getFragment(fragment));
@@ -654,7 +658,7 @@ namespace skelgenerator {
         return !spines.empty();
     }
 
-    std::pair<Eigen::Vector3d, Eigen::Vector3d> Neuron::getBB(const TFragment &fragment) {
+    Neuron::OOBB Neuron::getBB(const TFragment &fragment) {
         Eigen::Vector3d center;
         for (const auto &point: fragment.points) {
             center += point;
@@ -666,78 +670,252 @@ namespace skelgenerator {
             Eigen::Vector3d centeredPoint = fragment.points[i] - center;
             pointMatrix.row(i) = centeredPoint;
         }
-        std::cout << pointMatrix << std::endl;
+
         auto covarianzeMatrix = pointMatrix.transpose() * pointMatrix;
-        std::cout << covarianzeMatrix << std::endl;
+        Eigen::EigenSolver<Eigen::Matrix3d> eig(covarianzeMatrix);
 
-        Eigen::BDCSVD<Eigen::MatrixXd> svd(covarianzeMatrix, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        auto u = svd.matrixU();
-        std::cout << u << std::endl;
+        OOBB oobb;
+        oobb.center = center;
+        auto eigenVectors = eig.eigenvectors().real();
+        oobb.a0 = eigenVectors.col(0).normalized();
+        oobb.a1 = eigenVectors.col(1).normalized();
+        oobb.a2 = eigenVectors.col(2).normalized();
 
-        Eigen::Matrix4d rotMatrix;
-        for (size_t i = 0; i < 3; i++) {
-            for (size_t j = 0; j < 3; j++) {
-                rotMatrix(i, j) = u(i, j);
-            }
-            rotMatrix(3, i) = 0;
+        for (const auto &point:fragment.points) {
+            Eigen::Vector3d v = point - center;
+            auto projection1 = abs(oobb.a0.dot(v));
+            auto projection2 = abs(oobb.a1.dot(v));
+            auto projection3 = abs(oobb.a2.dot(v));
+
+            oobb.d0 = std::max(projection1, oobb.d0);
+            oobb.d1 = std::max(projection2, oobb.d1);
+            oobb.d2 = std::max(projection3, oobb.d2);
         }
-
-        rotMatrix(3, 0) = 0.0d;
-        rotMatrix(3, 1) = 0.0d;
-        rotMatrix(3, 2) = 0.0d;
-
-        rotMatrix(3, 3) = 1;
-
-        std::cout << rotMatrix << std::endl;
-
-        Eigen::Vector3d min = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
-                               std::numeric_limits<double>::max()};
-        Eigen::Vector3d max = {-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
-                               -std::numeric_limits<double>::max()};
-
-        for (const auto &point: fragment.points) {
-            auto auxPoint = point - center;
-            Eigen::Vector4d transformedPoint(auxPoint[0], auxPoint[1], auxPoint[2], 1);
-            transformedPoint = rotMatrix * transformedPoint;
-
-            min = min.cwiseMin(transformedPoint.head(3));
-            max = max.cwiseMax(transformedPoint.head(3));
-        }
-
-        return {min,max};
+        return oobb;
     }
 
-    float Neuron::computeOverlap(const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB1,
-                                 const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB2) {
+    // see https://www.geometrictools.com/Documentation/DynamicCollisionDetection.pdf
+    //TODO check and optimize
+    bool Neuron::collide(Neuron::OOBB BB1, Neuron::OOBB BB2) {
+        Eigen::Vector3d D = BB2.center - BB1.center;
+        float c00 = BB1.a0.dot(BB2.a0);
+        float c01 = BB1.a0.dot(BB2.a1);
+        float c02 = BB1.a0.dot(BB2.a2);
+        float c10 = BB1.a1.dot(BB2.a0);
+        float c11 = BB1.a1.dot(BB2.a1);
+        float c12 = BB1.a1.dot(BB2.a2);
+        float c20 = BB1.a2.dot(BB2.a0);
+        float c21 = BB1.a2.dot(BB2.a1);
+        float c22 = BB1.a2.dot(BB2.a2);
 
-        if (BB1.first[0] > BB2.second[0] || BB1.second[0] < BB2.first[0]){
-            return 0;
+        float ac00 = std::abs(c00);
+        float ac01 = std::abs(c01);
+        float ac02 = std::abs(c02);
+        float ac10 = std::abs(c10);
+        float ac11 = std::abs(c11);
+        float ac12 = std::abs(c12);
+        float ac20 = std::abs(c20);
+        float ac21 = std::abs(c21);
+        float ac22 = std::abs(c22);
+
+
+        // A0
+        auto R0 = BB1.d0;
+        auto R1 = BB2.d0 * ac00 + BB2.d1 * ac01 + BB2.d2 * ac02;
+        auto R = std::abs(BB1.a0.dot(D));
+        if (R > R0 + R1) {
+            return false;
         }
 
-        if (BB1.first[1] > BB2.second[1] || BB1.second[1] < BB2.first[1]) {
-            return 0;
+        // A1
+        R0 = BB1.d1;
+        R1 = BB2.d0 * ac10 + BB2.d1 * ac11 + BB2.d2 * ac12;
+        R = std::abs(BB1.a1.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
         }
 
-        if (BB1.first[2] > BB2.second[2] || BB1.second[2] < BB2.first[2]){
-            return 0;
+        // A2
+        R0 = BB1.d2;
+        R1 = BB2.d0 * ac20 + BB2.d1 * ac21 + BB2.d2 * ac22;
+        R = std::abs(BB1.a2.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
         }
 
-        auto min = BB1.second.cwiseMin(BB2.second);
-        auto max = BB1.first.cwiseMax(BB2.first);
+        //B0
+        R0 = BB1.d0 * ac00 + BB1.d1 * ac10 + BB2.d2 * ac20;
+        R1 = BB2.d0;
+        R = std::abs(BB2.a0.dot(D));
 
-        auto interVolume = (min - max).prod();
+        if (R > R0 + R1) {
+            return false;
+        }
 
-        double volume1 = (BB1.second - BB1.first).prod();
-       // double volume2 = (BB2.second - BB1.first).prod();
-        return interVolume/volume1;
+        //B1
+        R0 = BB1.d0 * ac01 + BB1.d1 * ac11 + BB1.d2 * ac21;
+        R1 = BB2.d1;
+        R = std::abs(BB2.a1.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //B2
+        R0 = BB1.d0 * ac02 + BB1.d1 * ac12 + BB1.d2 * ac22;
+        R1 = BB2.d2;
+        R = std::abs(BB2.a2.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        // A0 X B0
+        R0 = BB1.d1 * ac20 + BB1.d2 * ac10;
+        R1 = BB2.d1 * ac02 + BB2.d2 * ac01;
+        R = std::abs(c10 * BB1.a2.dot(D) - c20 * BB1.a1.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A0 X B1
+        R0 = BB1.d1 * ac21 + BB1.d2 * ac11;
+        R1 = BB2.d0 * ac02 + BB2.d2 * ac00;
+        R = std::abs(c11 * BB1.a2.dot(D) - c21 * BB1.a1.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A0 x B2
+        R0 = BB1.d0 * ac22 + BB1.d2 * ac12;
+        R1 = BB2.d0 * ac01 + BB2.d1 * ac00;
+        R = std::abs(c12 * BB1.a2.dot(D) - c22 * BB1.a1.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A1 X B0
+        R0 = BB1.d0 * ac20 + BB1.d2 * ac00;
+        R1 = BB2.d1 * ac12 + BB2.d2 * ac11;
+        R = std::abs(c20 * BB1.a0.dot(D) - c00 * BB1.a2.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A1 X B1
+        R0 = BB1.d0 * ac21 + BB1.d2 * ac01;
+        R1 = BB2.d0 * ac12 + BB2.d2 * ac10;
+        R = std::abs(c21 * BB1.a0.dot(D) - c01 * BB1.a2.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A1 X B2
+        R0 = BB1.d0 * ac22 + BB1.d2 * ac02;
+        R1 = BB2.d0 * ac11 + BB2.d1 * c10;
+        R = std::abs(c22 * BB1.a0.dot(D) - c02 * BB1.a2.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A2 X B0
+        R0 = BB1.d0 * ac10 + BB1.d1 * ac00;
+        R1 = BB2.d1 * ac22 + BB2.d2 * ac21;
+        R = std::abs(c00 * BB1.a1.dot(D) - c10 * BB1.a0.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A2 X B1
+        R0 = BB1.d0 * ac11 + BB1.d1 * ac01;
+        R1 = BB2.d0 * ac22 + BB2.d2 * ac20;
+        R = std::abs(c01 * BB1.a1.dot(D) - c11 * BB1.a0.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        //A2 X B2
+        R0 = BB1.d0 * ac12 + BB1.d1 * ac02;
+        R1 = BB2.d0 * ac21 + BB2.d1 * ac20;
+        R = std::abs(c02 * BB1.a1.dot(D) - c12 * BB1.a0.dot(D));
+
+        if (R > R0 + R1) {
+            return false;
+        }
+
+        return true;
     }
 
-    void Neuron::addImarisSpines(const std::string& imarisFile_) {
+
+    void Neuron::addImarisSpines(const std::string &imarisFile_) {
         this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
     }
 
     void Neuron::clearImarisSpines() {
         this->imarisSpines.clear();
+    }
+
+    void Neuron::removeFragments(TDendrite dendrite) {
+        std::vector<OOBB> obbs;
+        std::vector<int> deletes;
+        obbs.reserve(dendrite.fragments.size());
+        for (const auto &fragment: dendrite.fragments) {
+            obbs.push_back(getBB(fragment));
+        }
+
+        for (size_t i = 0; i < obbs.size(); i++) {
+            for (size_t j = i + 1 ; j < obbs.size(); j++) {
+                if (collide(obbs[i],obbs[j])){
+                    if (checkPoints(obbs[i],dendrite.fragments[j])) {
+                        deletes.push_back(j);
+                    } else if (checkPoints(obbs[j], dendrite.fragments[i])) {
+                        deletes.push_back(i);
+                    }
+                }
+            }
+        }
+
+        for (size_t i = deletes.size() - 1; i > 0; i--) {
+            dendrite.fragments.erase(dendrite.fragments.begin() + i);
+        }
+    }
+
+    bool Neuron::checkPoints(const Neuron::OOBB& oobb, const TFragment &fragment) {
+        for (const auto& point: fragment.points) {
+            Eigen::Vector3d v = point - oobb.center;
+            auto projection0 = abs(oobb.a0.dot(v));
+            auto projection1 = abs(oobb.a1.dot(v));
+            auto projection2 = abs(oobb.a2.dot(v));
+
+            if (projection0 > oobb.d0 || projection1 > oobb.d1 || projection2 > oobb.d2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void Neuron::exportFragmentAndBB(const OOBB& oobb, const TFragment& fragment) {
+        std::ofstream file;
+        file.open("test.obj");
+
+        for (const auto& point: fragment.points ) {
+            file << "v" << point[0] << " " << point[1] << " " << point[2] << "0 0 1";
+        }
+
+        auto p1 = oobb.a1 * oobb.d1;
+        auto p1i = oobb.a1 * -oobb.d1;
+
     }
 }
 

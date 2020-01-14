@@ -32,9 +32,15 @@ namespace skelgenerator {
         spineSet spines;
         std::vector<TSpineImaris> imarisSpines;
         std::vector<std::vector<SamplePoint>> longsSpines;
+
     private:
         bool incorrectConecctions;
     public:
+        struct OOBB {
+            Eigen::Vector3d center;
+            Eigen::Vector3d a0,a1,a2;
+            double d0,d1,d2;
+        };
 
         Neuron(const std::string& apiFile_,const  std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
         void addSpinesLongs (const std::string& longsFile_);
@@ -67,8 +73,8 @@ namespace skelgenerator {
 
         const spineSet &getSpines() const;
 
-        static std::pair<Eigen::Vector3d,Eigen::Vector3d> getBB(const TFragment& fragment);
-        static float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
+        static Neuron::OOBB getBB(const TFragment& fragment);
+        static bool collide(Neuron::OOBB BB1, Neuron::OOBB BB2);
 
 
 
@@ -104,6 +110,11 @@ namespace skelgenerator {
 
         //float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
 
+        void removeFragments(TDendrite dendrite);
+
+        bool checkPoints(const OOBB& oobb, const TFragment& fragment);
+
+        void exportFragmentAndBB(const OOBB& oobb, const TFragment& fragment);
     };
 }
 
