@@ -32,6 +32,12 @@ namespace skelgenerator {
         spineSet spines;
         std::vector<TSpineImaris> imarisSpines;
         std::vector<std::vector<SamplePoint>> longsSpines;
+
+        struct OOBB {
+            Eigen::Vector3f center;
+            Eigen::Vector3f a1,a2,a3;
+            float d1,d2,d3;
+        };
     private:
         bool incorrectConecctions;
     public:
@@ -67,8 +73,8 @@ namespace skelgenerator {
 
         const spineSet &getSpines() const;
 
-        static std::pair<Eigen::Vector3d,Eigen::Vector3d> getBB(const TFragment& fragment);
-        static float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
+        static Neuron::OOBB getBB(const TFragment& fragment);
+        static bool collide(Neuron::OOBB BB1, Neuron::OOBB BB2);
 
 
 

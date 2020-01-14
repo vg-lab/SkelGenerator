@@ -654,7 +654,7 @@ namespace skelgenerator {
         return !spines.empty();
     }
 
-    std::pair<Eigen::Vector3d, Eigen::Vector3d> Neuron::getBB(const TFragment &fragment) {
+    Neuron::OOBB Neuron::getBB(const TFragment &fragment) {
         Eigen::Vector3d center;
         for (const auto &point: fragment.points) {
             center += point;
@@ -666,71 +666,45 @@ namespace skelgenerator {
             Eigen::Vector3d centeredPoint = fragment.points[i] - center;
             pointMatrix.row(i) = centeredPoint;
         }
-        std::cout << pointMatrix << std::endl;
+
         auto covarianzeMatrix = pointMatrix.transpose() * pointMatrix;
-        std::cout << covarianzeMatrix << std::endl;
+        Eigen::EigenSolver<Eigen::Matrix3f> eig(covarianzeMatrix);
 
-        Eigen::BDCSVD<Eigen::MatrixXd> svd(covarianzeMatrix, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        auto u = svd.matrixU();
-        std::cout << u << std::endl;
+        OOBB oobb;
+        oobb.center = center;
+        auto eigenVectors = eig.eigenvectors();
+        oobb.a1 = eigenVectors.col(0).normalized();
+        oobb.a2 = eigenVectors.col(1).normalized();
+        oobb.a3 = eigenVectors.col(2).normalized();
 
-        Eigen::Matrix4d rotMatrix;
-        for (size_t i = 0; i < 3; i++) {
-            for (size_t j = 0; j < 3; j++) {
-                rotMatrix(i, j) = u(i, j);
-            }
-            rotMatrix(3, i) = 0;
+        for ( const auto& point:fragment.points ) {
+            Eigen::Vector3f v = point - center;
+            auto projection1 = v.dot(oobb.a1);
+            auto projection2 = v.dot(oobb.a2);
+            auto projection3 = v.dot(oobb.a3);
+
+            oobb.d1 = std::min(projection1,oobb.d1);
+            oobb.d1 = std::max(projection1,oobb.d1);
+
+            oobb.d2 = std::min(projection2,oobb.d2);
+            oobb.d2 = std::max(projection2,oobb.d2);
+
+            oobb.d3 = std::min(projection3,oobb.d3);
+            oobb.d3 = std::max(projection3,oobb.d3);
         }
-
-        rotMatrix(3, 0) = 0.0d;
-        rotMatrix(3, 1) = 0.0d;
-        rotMatrix(3, 2) = 0.0d;
-
-        rotMatrix(3, 3) = 1;
-
-        std::cout << rotMatrix << std::endl;
-
-        Eigen::Vector3d min = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
-                               std::numeric_limits<double>::max()};
-        Eigen::Vector3d max = {-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
-                               -std::numeric_limits<double>::max()};
-
-        for (const auto &point: fragment.points) {
-            auto auxPoint = point - center;
-            Eigen::Vector4d transformedPoint(auxPoint[0], auxPoint[1], auxPoint[2], 1);
-            transformedPoint = rotMatrix * transformedPoint;
-
-            min = min.cwiseMin(transformedPoint.head(3));
-            max = max.cwiseMax(transformedPoint.head(3));
-        }
-
-        return {min,max};
+        return oobb;
     }
 
-    float Neuron::computeOverlap(const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB1,
-                                 const std::pair<Eigen::Vector3d, Eigen::Vector3d> &BB2) {
+    // see https://www.geometrictools.com/Documentation/DynamicCollisionDetection.pdf
+    bool Neuron::collide(Neuron::OOBB BB1, Neuron::OOBB BB2){
+        Eigen::Vector3f D = BB2.center - BB1.center;
 
-        if (BB1.first[0] > BB2.second[0] || BB1.second[0] < BB2.first[0]){
-            return 0;
-        }
+        auto R0 = BB1.a1;
+        auto R1 = 
 
-        if (BB1.first[1] > BB2.second[1] || BB1.second[1] < BB2.first[1]) {
-            return 0;
-        }
-
-        if (BB1.first[2] > BB2.second[2] || BB1.second[2] < BB2.first[2]){
-            return 0;
-        }
-
-        auto min = BB1.second.cwiseMin(BB2.second);
-        auto max = BB1.first.cwiseMax(BB2.first);
-
-        auto interVolume = (min - max).prod();
-
-        double volume1 = (BB1.second - BB1.first).prod();
-       // double volume2 = (BB2.second - BB1.first).prod();
-        return interVolume/volume1;
     }
+
+
 
     void Neuron::addImarisSpines(const std::string& imarisFile_) {
         this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
