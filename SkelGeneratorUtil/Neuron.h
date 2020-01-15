@@ -33,14 +33,14 @@ namespace skelgenerator {
         std::vector<TSpineImaris> imarisSpines;
         std::vector<std::vector<SamplePoint>> longsSpines;
 
-        struct OOBB {
-            Eigen::Vector3f center;
-            Eigen::Vector3f a1,a2,a3;
-            float d1,d2,d3;
-        };
     private:
         bool incorrectConecctions;
     public:
+        struct OOBB {
+            Eigen::Vector3d center;
+            Eigen::Vector3d a0,a1,a2;
+            double d0,d1,d2;
+        };
 
         Neuron(const std::string& apiFile_,const  std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 3);
         void addSpinesLongs (const std::string& longsFile_);
@@ -110,6 +110,11 @@ namespace skelgenerator {
 
         //float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
 
+        void removeFragments(TDendrite dendrite);
+
+        bool checkPoints(const OOBB& oobb, const TFragment& fragment);
+
+        void exportFragmentAndBB(const OOBB& oobb, const TFragment& fragment);
     };
 }
 
