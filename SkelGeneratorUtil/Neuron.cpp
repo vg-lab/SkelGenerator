@@ -150,7 +150,7 @@ namespace skelgenerator {
 
 
             if (minDistance < connectionThreshold) {
-                std::cout << minDistance << std::endl;
+                //std::cout << minDistance << std::endl;
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
                 conns.push_back(conn);
             }
@@ -659,7 +659,7 @@ namespace skelgenerator {
     }
 
     Neuron::OOBB Neuron::getBB(const TFragment &fragment) {
-        Eigen::Vector3d center;
+        Eigen::Vector3d center (0,0,0);
         for (const auto &point: fragment.points) {
             center += point;
         }
@@ -680,6 +680,7 @@ namespace skelgenerator {
         oobb.a0 = eigenVectors.col(0).normalized();
         oobb.a1 = eigenVectors.col(1).normalized();
         oobb.a2 = eigenVectors.col(2).normalized();
+        oobb.d0 = oobb.d1 = oobb.d2 = 0;
 
         for (const auto &point:fragment.points) {
             Eigen::Vector3d v = point - center;
@@ -865,9 +866,10 @@ namespace skelgenerator {
         this->imarisSpines.clear();
     }
 
-    void Neuron::removeFragments(TDendrite dendrite) {
+    void Neuron::removeFragments(TDendrite& dendrite) {
         std::vector<OOBB> obbs;
-        std::vector<int> deletes;
+        auto cmp = [](int a, int b){return a > b;};
+        std::set<int, decltype(cmp)> deletes(cmp);
         obbs.reserve(dendrite.fragments.size());
         for (const auto &fragment: dendrite.fragments) {
             obbs.push_back(getBB(fragment));
@@ -877,16 +879,17 @@ namespace skelgenerator {
             for (size_t j = i + 1 ; j < obbs.size(); j++) {
                 if (collide(obbs[i],obbs[j])){
                     if (checkPoints(obbs[i],dendrite.fragments[j])) {
-                        deletes.push_back(j);
+                        deletes.insert(j);
                     } else if (checkPoints(obbs[j], dendrite.fragments[i])) {
-                        deletes.push_back(i);
+                        deletes.insert(i);
                     }
                 }
             }
-        }
 
-        for (size_t i = deletes.size() - 1; i > 0; i--) {
-            dendrite.fragments.erase(dendrite.fragments.begin() + i);
+        }
+        for (const auto index: deletes) {
+            dendrite.fragments.erase(dendrite.fragments.begin() + index);
+            obbs.erase(obbs.begin() + index);
         }
     }
 
@@ -905,17 +908,31 @@ namespace skelgenerator {
         return true;
     }
 
-    void Neuron::exportFragmentAndBB(const OOBB& oobb, const TFragment& fragment) {
+    void Neuron::exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, std::string prefixName) {
         std::ofstream file;
-        file.open("test.obj");
+
+        file.open("oobbs/" + prefixName + "-" + fragment.nombre + ".obj", std::ofstream::out);
 
         for (const auto& point: fragment.points ) {
-            file << "v" << point[0] << " " << point[1] << " " << point[2] << "0 0 1";
+            file << "v " << point[0] << " " << point[1] << " " << point[2] << " 0 0 1" << std::endl;
         }
 
-        auto p1 = oobb.a1 * oobb.d1;
-        auto p1i = oobb.a1 * -oobb.d1;
+        std::vector<Eigen::Vector3d> pointsBB (8);
+        pointsBB[0] = oobb.a0 * oobb.d0 + oobb.a1 * oobb.d1 + oobb.a2 * oobb.d2;
+        pointsBB[1] = oobb.a0 * oobb.d0 + oobb.a1 * oobb.d1 + oobb.a2 * -oobb.d2;
+        pointsBB[2] = oobb.a0 * oobb.d0 + oobb.a1 * -oobb.d1 + oobb.a2 * oobb.d2;
+        pointsBB[3] = oobb.a0 * oobb.d0 + oobb.a1 * -oobb.d1 + oobb.a2 * -oobb.d2;
+        pointsBB[4] = oobb.a0 * -oobb.d0 + oobb.a1 * oobb.d1 + oobb.a2 * oobb.d2;
+        pointsBB[5] = oobb.a0 * -oobb.d0 + oobb.a1 * oobb.d1 + oobb.a2 * -oobb.d2;
+        pointsBB[6] = oobb.a0 * -oobb.d0 + oobb.a1 * -oobb.d1 + oobb.a2 * oobb.d2;
+        pointsBB[7] = oobb.a0 * -oobb.d0 + oobb.a1 * -oobb.d1 + oobb.a2 * -oobb.d2;
 
+        for (auto& point: pointsBB) {
+            point += oobb.center;
+            file << "v " << point[0] << " " << point[1] << " " << point[2] << " 1 0 0" << std::endl;
+        }
+
+        file.close();
     }
 }
 

@@ -142,6 +142,11 @@ namespace skelgenerator {
         std::vector<TDendrite> dendrites;
         std::string line;
         std::ifstream file(basalFile);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("Can't open basal file: " + basalFile);
+        }
+
         int actual = -1;
         int ant = -1;
         int index = 0;
