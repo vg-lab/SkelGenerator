@@ -115,6 +115,8 @@ namespace skelgenerator {
         bool checkPoints(const OOBB& oobb, const TFragment& fragment);
 
         void exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, std::string prefixName);
+
+        void improveInitialFragments();
     };
 }
 

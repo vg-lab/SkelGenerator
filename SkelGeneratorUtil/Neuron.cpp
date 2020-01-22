@@ -74,6 +74,8 @@ namespace skelgenerator {
             procesSpinesFilament(apiDendrite, basalDendrites);
         }
 
+        improveInitialFragments();
+
     }
 
     void Neuron::addSpinesLongs(const std::string &longsFile_) {
@@ -94,7 +96,7 @@ namespace skelgenerator {
 
     Section *Neuron::getFragment(const TFragment &fragment) {
         auto sectionSkel = new Section(fragment.nombre);
-        for (unsigned int cir = 3; cir < fragment.nCircles; cir++) {
+        for (unsigned int cir = 0; cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
@@ -933,6 +935,16 @@ namespace skelgenerator {
         }
 
         file.close();
+    }
+
+    void Neuron::improveInitialFragments() {
+       if (this->apical != nullptr) {
+           this->apical->improveInit();
+       }
+
+       for (auto& basal:this->basals) {
+           basal->improveInit();
+       }
     }
 }
 

@@ -35,8 +35,7 @@ namespace skelgenerator {
         void removeDuplication(float threshold);
 
 
-
-
+        void improveInit();
     };
 }
 

@@ -39,6 +39,20 @@ namespace skelgenerator {
     void Dendrite::removeDuplication(float threshold) {
         dendrite->removeDuplicates(threshold);
     }
+
+    void Dendrite::improveInit() {
+        Section* sec = this->dendrite->getSec();
+        int i = 0;
+        float r1 = 1;
+        float r2 = 0.1;
+        while (!(r1/r2 > 0.8f && r1/r2 < 1.2f) && i < sec->size()) {
+            i++;
+            r1 = (*sec)[i]->getRadius();
+            r2 = (*sec)[i - 1]->getRadius();
+        }
+
+        this->dendrite->getSec()->trim(i);
+    }
 }
 
 
