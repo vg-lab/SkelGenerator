@@ -319,7 +319,7 @@ namespace skelgenerator {
             ss << "\t" << "(MBFObjectType 5)" << std::endl;
             for (const auto &point: contour) {
                 ss << "\t" << "(\t" << point[0] + displacement[0] << "\t" << point[1] + displacement[1] << "\t"
-                   << point[2] + displacement[2] << ")" << std::endl;
+                   << point[2] + displacement[2] <<  "\t0.24)" << std::endl;
             }
             ss << ")" << std::endl;
         }
