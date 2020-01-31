@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
+#include <fstream>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
@@ -686,9 +687,9 @@ namespace skelgenerator {
 
         for (const auto &point:fragment.points) {
             Eigen::Vector3d v = point - center;
-            auto projection1 = abs(oobb.a0.dot(v));
-            auto projection2 = abs(oobb.a1.dot(v));
-            auto projection3 = abs(oobb.a2.dot(v));
+            double projection1 = std::abs(oobb.a0.dot(v));
+            double projection2 = std::abs(oobb.a1.dot(v));
+            double projection3 = std::abs(oobb.a2.dot(v));
 
             oobb.d0 = std::max(projection1, oobb.d0);
             oobb.d1 = std::max(projection2, oobb.d1);
@@ -898,9 +899,9 @@ namespace skelgenerator {
     bool Neuron::checkPoints(const Neuron::OOBB& oobb, const TFragment &fragment) {
         for (const auto& point: fragment.points) {
             Eigen::Vector3d v = point - oobb.center;
-            auto projection0 = abs(oobb.a0.dot(v));
-            auto projection1 = abs(oobb.a1.dot(v));
-            auto projection2 = abs(oobb.a2.dot(v));
+            auto projection0 = std::abs(oobb.a0.dot(v));
+            auto projection1 = std::abs(oobb.a1.dot(v));
+            auto projection2 = std::abs(oobb.a2.dot(v));
 
             if (projection0 > oobb.d0 || projection1 > oobb.d1 || projection2 > oobb.d2) {
                 return false;
