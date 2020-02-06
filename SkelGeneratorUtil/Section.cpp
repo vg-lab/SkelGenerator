@@ -14,7 +14,7 @@ namespace skelgenerator {
 
     }
 
-    void Section::addPoint(SamplePoint* &samplePoint) {
+    void Section::addPoint(std::shared_ptr<SamplePoint> &samplePoint) {
         this->points.push_back(samplePoint);
     }
 
@@ -22,15 +22,15 @@ namespace skelgenerator {
         return static_cast<int>(points.size());
     }
 
-    std::tuple<Section *, Section *> Section::split(int point) {
-        auto segment1 = new Section(this->name + "-1");
-        auto segment2 = new Section(this->name + "-2");
+    std::tuple<Section, Section> Section::split(int point) {
+        Section segment1 (this->name + "-1");
+        Section segment2 (this->name + "-2");
         for (int i = 0; i < point; i++) {
-            segment1->addPoint(points[i]);
+            segment1.addPoint(points[i]);
         }
 
         for (int i = point; i < this->size(); i++) {
-            segment2->addPoint(points[i]);
+            segment2.addPoint(points[i]);
         }
 
         return std::make_tuple(segment1, segment2);
@@ -55,14 +55,14 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    Section *Section::unionSection(Section *section1, Section *section2) {
-        auto resultSegment = new Section(section1->getName() + "+" +  section2->getName());
-        for (const auto &point :section1->points) {
-            resultSegment->points.push_back(point);
+    Section Section::unionSection(const Section& section1, const Section& section2) {
+        Section resultSegment (section1.getName() + "+" +  section2.getName());
+        for (const auto &point :section1.points) {
+            resultSegment.points.push_back(point);
         }
 
-        for (const auto &point :section2->points) {
-            resultSegment->points.push_back(point);
+        for (const auto &point :section2.points) {
+            resultSegment.points.push_back(point);
         }
         return resultSegment;
     }
@@ -77,14 +77,13 @@ namespace skelgenerator {
     }
 
     void Section::addPoint(Eigen::Vector3d point, float radius) {
-        auto p = new SamplePoint(point,radius);
+        auto p = std::make_shared<SamplePoint>(point,radius);
         points.push_back(p);
 
     }
 
-    void Section::addPoint(Spine *&samplePoint, int pos) {
+    void Section::addPoint(std::shared_ptr<Spine> &samplePoint, int pos) {
         this->points.insert(this->points.begin() + pos, samplePoint);
-
     }
 
     std::string Section::to_swc(int &counter, int parent, int type,bool spines,int init) {
@@ -118,6 +117,11 @@ namespace skelgenerator {
     void Section::remove(int index){
         this->points.erase(this->points.begin() + index);
     }
+
+    bool Section::operator<(const Section &rhs) const {
+        return name < rhs.name;
+    }
+
 }
 
 

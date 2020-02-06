@@ -14,9 +14,9 @@
 namespace skelgenerator {
 
     typedef struct {
-        Section * fragment1;
+        Section fragment1;
         int  p1;
-        Section * fragment2;
+        Section fragment2;
         int p2 /*,index*/;
         //primer segmento(encontro la conexion), punto concreto donde se conecta ,segundo segmento,punto donde conectara el segundo segmento,punto donde conecta con el primer segmento
     } TConn;

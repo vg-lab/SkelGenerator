@@ -33,6 +33,7 @@ namespace skelgenerator {
         this->connectionThreshold = connectionThreshold_;
         this->apical = nullptr;
         this->numDendrites = 0;
+        this->segmentCounter = 0;
         TDendrite apiDendrite = {};
         if (!apiFile_.empty()) {
             apiDendrite = VRMLReader::readVrmlApical(apiFile_);
@@ -84,9 +85,9 @@ namespace skelgenerator {
         procesSpinesLongs();
     }
 
-    std::vector<Section *> Neuron::generateFragments(TDendrite dendrite) {
+    std::vector<Section> Neuron::generateFragments(TDendrite dendrite) {
         removeFragments(dendrite);
-        std::vector<Section *> fragments;
+        std::vector<Section> fragments;
         for (const auto &fragment : dendrite.fragments) {
             fragments.push_back(getFragment(fragment));
         }
@@ -95,8 +96,9 @@ namespace skelgenerator {
 
     }
 
-    Section *Neuron::getFragment(const TFragment &fragment) {
-        auto sectionSkel = new Section(fragment.nombre);
+    Section Neuron::getFragment(const TFragment &fragment) {
+        Section sectionSkel (fragment.nombre + "_" + std::to_string(this->segmentCounter));
+        this->segmentCounter++;
         for (unsigned int cir = 0; cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
@@ -108,13 +110,13 @@ namespace skelgenerator {
                 auto r = (medio - fragment.points[cir * 17 + i]).norm();
                 radius = radius < r ? r : radius;
             }
-            sectionSkel->addPoint(medio, radius);
+            sectionSkel.addPoint(medio, radius);
         }
         return sectionSkel;
     }
 
-    std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section *> fragments) {
-        std::set<Section *> reaminFragments;
+    std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section> fragments) {
+        std::set<Section > reaminFragments;
         for (size_t i = 0; i < fragments.size(); i++) {
             reaminFragments.insert(fragments[i]);
         }
@@ -126,7 +128,7 @@ namespace skelgenerator {
     }
 
 
-    SubDendrite *Neuron::computeSubDendrite(Section *fragment, int initPoint, std::set<Section *> &reamingFragments) {
+    SubDendrite *Neuron::computeSubDendrite(Section fragment, int initPoint, std::set<Section> &reamingFragments) {
         //std::cout << "Processing fragment: " << fragment->getName() << "\n" << std::flush;
         reamingFragments.erase(fragment);
         std::vector<TConn> conns;
@@ -134,14 +136,14 @@ namespace skelgenerator {
             float minDistance = 1000;
             int minPoint1 = 0;
             int minPoint2 = 0;
-            for (int i = 0; i < fragment->size(); i++) {
-                auto p1 = (*fragment)[i]->getPoint();
-                auto p1r = (*fragment)[i]->getRadius();
-                for (int j = 0; j < anotherFragment->size(); j++) {
-                    auto p2 = (*anotherFragment)[j]->getPoint();
-                    auto p2r = (*anotherFragment)[j]->getRadius();
+            for (int i = 0; i < fragment.size(); i++) {
+                auto p1 = fragment[i]->getPoint();
+                //auto p1r = (*fragment)[i]->getRadius();
+                for (int j = 0; j < anotherFragment.size(); j++) {
+                    auto p2 = anotherFragment[j]->getPoint();
+                   // auto p2r = (*anotherFragment)[j]->getRadius();
                     float dist = (p1 - p2).norm();
-                    dist = dist - p1r - p2r;
+                    //dist = dist - p1r - p2r;
 
                     if (dist < minDistance) {
                         minDistance = dist;
@@ -160,18 +162,18 @@ namespace skelgenerator {
         }
 
         //Le damos la vuelta a fragmentos al reves
-        if (initPoint > fragment->size() / 2) {
+        if (initPoint > fragment.size() / 2) {
             std::cout << "Rama del reves" << std::endl;
-            fragment->reverse();
+            fragment.reverse();
 
-            initPoint = (fragment->size() - initPoint);
+            initPoint = (fragment.size() - initPoint);
             for (auto &conn : conns) {
-                conn.p1 = (fragment->size() - conn.p1);
+                conn.p1 = (fragment.size() - conn.p1);
             }
         }
 
 
-        fragment->trim(initPoint);
+        fragment.trim(initPoint);
         for (auto conn = conns.begin(); conn < conns.end(); conn++) {
             conn->p1 -= initPoint;
             /* Si alguna conexion es negativa indica que se ha realizado una mala conexion de segmentos anteriores por
@@ -192,7 +194,7 @@ namespace skelgenerator {
                 auto con1 = conns[0];
                 auto con2 = conns[1];
                 int dist = std::abs(con1.p1 - con2.p1);
-                if (dist < 2 && (con1.p1 == fragment->size() - 1 || con2.p1 == fragment->size() - 1)) {
+                if (dist < 2 && (con1.p1 == fragment.size() - 1 || con2.p1 == fragment.size() - 1)) {
                     //std::cout << "Seccion" << std::endl;
                     auto subDendrite = new SubDendrite(fragment);
                     reamingFragments.erase(con1.fragment2);
@@ -205,7 +207,7 @@ namespace skelgenerator {
 
 
             TConn *firstCoon = nullptr;
-            int min = fragment->size();
+            int min = fragment.size();
             for (auto &coon : conns) {
                 if (coon.p1 <= min) {
                     firstCoon = &coon;
@@ -214,18 +216,18 @@ namespace skelgenerator {
             }
 
 
-            if (conns.size() == 1 && (conns[0].p1 == fragment->size() - 1 || conns[0].p1 ==
+            if (conns.size() == 1 && (conns[0].p1 == fragment.size() - 1 || conns[0].p1 ==
                                                                              0)) { // Si solo tiene una conexion se unen el segmento actual con el encontrado
                 auto con = conns[0];
-                std::cout << "Segmento suelto " << con.p1 << " = " << fragment->size() - 1 << std::endl;
+                std::cout << "Segmento suelto " << con.p1 << " = " << fragment.size() - 1 << std::endl;
                 reamingFragments.erase(fragment);
                 reamingFragments.erase(con.fragment2);
                 //Comprobamos que el segmento con el que vamos a unir no este del reves
-                if (con.p2 > con.fragment2->size() / 2) {
+                if (con.p2 > con.fragment2.size() / 2) {
                     std::cout << "Rama del reves" << std::endl;
-                    con.fragment2->reverse();
+                    con.fragment2.reverse();
 
-                    con.p2 = (con.fragment2->size() - con.p2);
+                    con.p2 = (con.fragment2.size() - con.p2);
                 }
                 if (con.p1 == 0) {
                     auto unionSegment = Section::unionSection(con.fragment2, fragment);
@@ -252,7 +254,7 @@ namespace skelgenerator {
 
                 int splitPoint = std::max(1, firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
 
-                auto segmentSplit = fragment->split(splitPoint);
+                auto segmentSplit = fragment.split(splitPoint);
                 auto segment1 = std::get<0>(segmentSplit);
                 auto segment2 = std::get<1>(segmentSplit);
 
@@ -264,7 +266,12 @@ namespace skelgenerator {
                 return subDendrite;
             }
 
-            auto segmentSplit = fragment->split(firstCoon->p1);
+
+//            if (firstCoon->p1 == 0) {
+//                firstCoon->p1++;
+//            }
+
+            auto segmentSplit = fragment.split(firstCoon->p1);
             auto segment1 = std::get<0>(segmentSplit);
             auto segment2 = std::get<1>(segmentSplit);
 
@@ -347,7 +354,7 @@ namespace skelgenerator {
             reamingFragments += std::get<1>(resultApi);
         }
 
-        std::vector<std::vector<Section *>> basalsFragments;
+        std::vector<std::vector<Section>> basalsFragments;
         for (const auto &basalDedrite: basalDendrites) {
             basalsFragments.push_back(generateFragments(basalDedrite));
         }
@@ -366,8 +373,8 @@ namespace skelgenerator {
 
     void Neuron::procesSpinesLongs() {
         spineSet longSpinesSet;
-        for (const auto spine: this->longsSpines) {
-            longSpinesSet.insert(new Spine(spine));
+        for (const auto& spine: this->longsSpines) {
+            longSpinesSet.insert(std::make_shared<Spine>(spine));
         }
 
         if (apical != nullptr) {
@@ -403,7 +410,7 @@ namespace skelgenerator {
     spineSet Neuron::generateSpines(const TDendrite &dendrite) {
         spineSet spines_;
         for (const auto &spine:dendrite.spines) {
-            auto spineSkel = new Spine(spine);
+            auto spineSkel = std::make_shared<Spine>(spine);
             spines_.insert(spineSkel);
         }
         return spines_;
@@ -412,7 +419,6 @@ namespace skelgenerator {
 
 
     void Neuron::addSpines(Dendrite *dendrite, spineSet &spines_) {
-        std::vector<std::tuple<Spine *, Section *, int, float>> spinesToInsert;
         for (auto spine :spines_) {
             auto result = getPosSpine(dendrite->getDendrite(), spine);
             auto sec = std::get<0>(result);
@@ -431,9 +437,9 @@ namespace skelgenerator {
         }
     }
 
-    std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, Spine *spine) {
+    std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, std::shared_ptr<Spine> spine) {
         const auto &insertPoint = spine->getInsertPoint();
-        auto sec = subDendrite->getSec();
+        Section* sec = &(subDendrite->getSec());
         float min = 1000.0f;
         int mini = 0;
         for (int i = 0; i < sec->size(); i++) {
@@ -452,8 +458,8 @@ namespace skelgenerator {
         if (subDendrite->getRamification1() == nullptr && subDendrite->getRamification2() == nullptr) {
             return std::make_tuple(sec, mini, min);
         } else {
-            std::tuple<Section *, int, float> result1;
-            std::tuple<Section *, int, float> result2;
+            std::tuple<Section*, int, float> result1;
+            std::tuple<Section*, int, float> result2;
             float minDist1 = 1000.0f;
             float minDist2 = 1000.0f;
 
@@ -495,8 +501,8 @@ namespace skelgenerator {
     void Neuron::generateSoma() {
         if (numDendrites == 1) { //Special case only 1 dendrite not have any information thus the soma is a placeholder.
             auto firstSec = this->basals[0]->getDendrite()->getSec();
-            SamplePoint *firstPoint = (*firstSec)[0];
-            SamplePoint *secondPoint = (*firstSec)[1];
+            std::shared_ptr<SamplePoint> firstPoint = firstSec[0];
+            std::shared_ptr<SamplePoint> secondPoint = firstSec[1];
             Eigen::Vector3d dir = firstPoint->getPoint() - secondPoint->getPoint();
             dir.normalize();
             Eigen::Vector3d somaCenter = firstPoint->getPoint() + dir;
@@ -505,7 +511,7 @@ namespace skelgenerator {
             Eigen::Vector3d somaBasal(0, 0, 0);
             for (auto &basal: this->basals) {
                 auto sec = basal->getDendrite()->getSec();
-                somaBasal += (*sec)[0]->getPoint();
+                somaBasal += sec[0]->getPoint();
             }
 
             auto Zplane = 0;
@@ -515,7 +521,7 @@ namespace skelgenerator {
 
             if (apical != nullptr) {
                 auto secApical = apical->getDendrite()->getSec();
-                Eigen::Vector3d somaApical = (*secApical)[0]->getPoint();
+                Eigen::Vector3d somaApical = secApical[0]->getPoint();
                 Zplane += somaApical[2];
 
                 somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
@@ -529,7 +535,7 @@ namespace skelgenerator {
             }
 
             for (auto &basal:this->basals) {
-                Eigen::Vector3d firstPoint = (*basal->getDendrite()->getSec())[0]->getPoint();
+                Eigen::Vector3d firstPoint = basal->getDendrite()->getSec()[0]->getPoint();
                 Zplane += firstPoint[2];
                 if ((firstPoint - somaCenter).norm() < somaRadius)
                     somaRadius = (firstPoint - somaCenter).norm();
@@ -947,6 +953,14 @@ namespace skelgenerator {
            basal->improveInit();
        }
     }
+
+    Neuron::~Neuron() {
+        for (const auto basal: basals) {
+            delete( basal);
+        }
+        delete apical;
+    }
+
 }
 
 

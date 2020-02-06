@@ -24,7 +24,7 @@ namespace skelgenerator {
 
         SamplePoint() = default;
 
-	virtual ~SamplePoint() {}
+	virtual ~SamplePoint() = default;
 	
         SKELGENERATOR_API const Eigen::Vector3d &getPoint() const;
 

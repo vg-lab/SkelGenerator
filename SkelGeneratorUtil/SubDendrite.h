@@ -11,14 +11,16 @@
 
 namespace skelgenerator {
     class SubDendrite {
-        Section * sec;
+        Section  sec;
         SubDendrite* ramification1;
         SubDendrite* ramification2;
 
     public:
-        SubDendrite(Section* section);
+        virtual ~SubDendrite();
 
-        Section *getSec() const;
+        SubDendrite(Section section);
+
+        Section& getSec();
 
         SubDendrite *getRamification1() const;
 

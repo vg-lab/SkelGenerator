@@ -32,6 +32,7 @@ namespace skelgenerator {
         spineSet spines;
         std::vector<TSpineImaris> imarisSpines;
         std::vector<std::vector<SamplePoint>> longsSpines;
+        int segmentCounter;
 
     private:
         bool incorrectConecctions;
@@ -43,6 +44,9 @@ namespace skelgenerator {
         };
 
         Neuron(const std::string& apiFile_,const  std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 1.1f);
+
+        virtual ~Neuron();
+
         void addSpinesLongs (const std::string& longsFile_);
         void addImarisSpines( const std::string& imarisFile_);
         void clearImarisSpines();
@@ -79,15 +83,15 @@ namespace skelgenerator {
 
 
     private:
-        std::vector<Section *> generateFragments(TDendrite dendrite);
+        std::vector<Section> generateFragments(TDendrite dendrite);
 
-        Section * getFragment(const TFragment &fragment);
-
-
-        SubDendrite* computeSubDendrite(Section* fragment, int initPoint,std::set<Section*>& reamingFragments);
+        Section getFragment(const TFragment &fragment);
 
 
-        std::tuple<SubDendrite *, int> computeDendrite(std::vector<Section *> fragments);
+        SubDendrite* computeSubDendrite(Section fragment, int initPoint,std::set<Section>& reamingFragments);
+
+
+        std::tuple<SubDendrite *, int> computeDendrite(std::vector<Section> fragments);
 
 
         void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);
@@ -100,7 +104,7 @@ namespace skelgenerator {
 
         void addSpines(Dendrite *dendrite, spineSet &spines);
 
-        std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, Spine *spine);
+        std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, std::shared_ptr<Spine> spine);
 
         void removeDuplicates(float threshold = 0.75);
 

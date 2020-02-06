@@ -10,6 +10,7 @@
 #include "SamplePoint.h"
 #include <unordered_set>
 #include <vector>
+#include <memory>
 
 
 namespace skelgenerator {
@@ -85,14 +86,14 @@ namespace skelgenerator {
 
     struct SpinePtrComparator {
     public:
-        bool operator()(Spine *const &obj1, Spine *const &obj2) const {
+        bool operator()(std::shared_ptr<Spine>const &obj1, std::shared_ptr<Spine>const &obj2) const {
             return obj1->getInsertPoint() == obj2->getInsertPoint();
         }
     };
 
     struct SpinePtrHasher {
     public:
-        size_t operator()(Spine* const &obj) const {
+        size_t operator()(std::shared_ptr<Spine> const &obj) const {
             auto result = 31 + std::hash<float>()(obj->getInsertPoint().x());
             result *= 31 + std::hash<float>()(obj->getInsertPoint().y());
             result *= 31 + std::hash<float>()(obj->getInsertPoint().z());
@@ -100,7 +101,7 @@ namespace skelgenerator {
         };
     };
 
-    using spineSet =  std::unordered_set<Spine *, SpinePtrHasher, SpinePtrComparator>;
+    using spineSet =  std::unordered_set<std::shared_ptr<Spine>, SpinePtrHasher, SpinePtrComparator>;
 
 
 }

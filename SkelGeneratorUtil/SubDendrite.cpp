@@ -14,7 +14,7 @@ namespace skelgenerator {
         SubDendrite::ramification2 = ramification2_;
     }
 
-    SubDendrite::SubDendrite(Section *section) {
+    SubDendrite::SubDendrite(Section section) {
         this->sec = section;
         this->ramification1 = nullptr;
         this->ramification2 = nullptr;
@@ -24,7 +24,7 @@ namespace skelgenerator {
     std::string SubDendrite::to_asc(std::string tab, int init) {
         std::stringstream ss;
         tab += "\t";
-        ss << this->sec->to_asc(tab, init);
+        ss << this->sec.to_asc(tab, init);
         if (this->ramification1 == nullptr && this->ramification2 == nullptr) {
             ss << tab << "Normal" << std::endl;
         } else {
@@ -47,9 +47,10 @@ namespace skelgenerator {
         return ss.str();
     }
 
-    Section *SubDendrite::getSec() const {
+    Section& SubDendrite::getSec() {
         return sec;
     }
+
 
     SubDendrite *SubDendrite::getRamification1() const {
         return ramification1;
@@ -62,7 +63,7 @@ namespace skelgenerator {
     std::string SubDendrite::to_swc(int &counter, int parent, int type, bool spines, int init) {
         std::stringstream ssSkel;
         std::stringstream ssSpines;
-        ssSkel << this->getSec()->to_swc(counter, parent, type, spines, init);
+        ssSkel << this->getSec().to_swc(counter, parent, type, spines, init);
         if (this->getRamification1() != nullptr && this->getRamification2() != nullptr) {
             int newParent = counter - 1;
             ssSkel << this->getRamification1()->to_swc(counter, newParent, type, spines);
@@ -75,8 +76,8 @@ namespace skelgenerator {
 
     void SubDendrite::removeDuplicates(float threshold) {
         if (this->getRamification1() != nullptr) {
-            auto &r1Sec = *(this->getRamification1()->getSec());
-            for (const auto &point : *(this->getSec())) {
+            auto r1Sec = this->getRamification1()->getSec();
+            for (const auto &point : this->getSec()) {
                 for (int i = r1Sec.size() - 1; i >= 0; i--) {
                     float d = (point->getPoint() - r1Sec[i]->getPoint()).norm();
                     if (d < threshold) {
@@ -93,7 +94,7 @@ namespace skelgenerator {
                     this->setRamification1(nullptr);
                 } else {
                     if (r1r1 != nullptr) {
-                        auto &r1r1Sec = *(r1r1->getSec());
+                        auto r1r1Sec = r1r1->getSec();
                         auto p = r1r1Sec[0]->getPoint();
                         auto r = r1r1Sec[0]->getRadius();
                         r1Sec.addPoint(p, r);
@@ -107,8 +108,8 @@ namespace skelgenerator {
         }
 
         if (this->getRamification2() != nullptr) {
-            auto &r2Sec = *(this->getRamification2()->getSec());
-            for (const auto &point : *(this->getSec())) {
+            auto r2Sec = this->getRamification2()->getSec();
+            for (const auto &point : this->getSec()) {
                 for (int i = r2Sec.size() - 1; i >= 0; i--) {
                     if ((point->getPoint() - r2Sec[i]->getPoint()).norm() < threshold) {
                         r2Sec.remove(i);
@@ -124,7 +125,7 @@ namespace skelgenerator {
                     this->setRamification2(nullptr);
                 } else {
                     if (r2r1 != nullptr) {
-                        auto &r2r1Sec = *(r2r1->getSec());
+                        auto r2r1Sec = r2r1->getSec();
                         auto p = r2r1Sec[0]->getPoint();
                         auto r = r2r1Sec[0]->getRadius();
                         r2Sec.addPoint(p, r);
@@ -136,12 +137,13 @@ namespace skelgenerator {
             if (this->getRamification2() != nullptr) {
                 this->getRamification2()->removeDuplicates(threshold);
             }
-
-
         }
-
     }
 
+    SubDendrite::~SubDendrite() {
+        delete this->ramification1;
+        delete this->ramification2;
 
+    }
 }
 

@@ -22,6 +22,8 @@ namespace skelgenerator {
         SubDendrite * dendrite;
         DENDTYPE dendtype;
     public:
+        virtual ~Dendrite();
+
         void setDendrite(SubDendrite *dendrite);
 
         void setDendtype(DENDTYPE dendtype);
