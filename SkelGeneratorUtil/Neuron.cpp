@@ -22,68 +22,84 @@
 namespace skelgenerator {
 
     Neuron::Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_,
-                   const std::string &imarisFile_,
-                   const std::string &longsFile_,
-                   float connectionThreshold_) {
-        //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
-        this->apiFile = apiFile_;
-        this->imarisFile = imarisFile_;
-        this->basalFiles = basalFiles_;
-        this->incorrectConecctions = false;
-        this->connectionThreshold = connectionThreshold_;
-        this->apical = nullptr;
-        this->numDendrites = 0;
-        this->segmentCounter = 0;
-        TDendrite apiDendrite = {};
-        if (!apiFile_.empty()) {
-            apiDendrite = VRMLReader::readVrmlApical(apiFile_);
-            this->numDendrites++;
+                   const std::string &imarisFile_, const std::string &longsFile_, float connectionThreshold_)
+    {
+      //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
+      this->_apiFile = apiFile_;
+      this->_imarisFile = imarisFile_;
+      this->_basalFiles = basalFiles_;
+      this->incorrectConecctions = false;
+      this->_apical = nullptr;
+      this->_numDendrites = 0;
+      this->_segmentCounter = 0;
+      if (!apiFile_.empty())
+      {
+        auto apiDendrite = VRMLReader::readVrmlApical(apiFile_);
+        removeFragments(apiDendrite);
+        this->_apiFragments = generateFragments(apiDendrite);
+        this->_apiSpines = generateSpines(apiDendrite);
+        this->_spines.insert(_apiSpines.begin(),_apiSpines.end());
+        this->_numDendrites++;
+      }
+
+      for (const auto &basalFile : basalFiles_)
+      {
+        auto readedBasals = VRMLReader::readBasalFile(basalFile);
+        for (auto &basal: readedBasals)
+        {
+          removeFragments(basal);
+          this->_basalsFragments.push_back(generateFragments(basal));
+          auto basalSpines = generateSpines(basal);
+          this->_basalsSpines.push_back(generateSpines(basal));
+          this->_spines.insert(basalSpines.begin(),basalSpines.end());
         }
+      }
 
-        std::vector<TDendrite> basalDendrites;
-        for (const auto &basalFile : basalFiles_) {
-            auto thisBasal = VRMLReader::readBasalFile(basalFile);
-            basalDendrites.insert(basalDendrites.end(), thisBasal.begin(), thisBasal.end());
-        }
-
-        this->numDendrites += basalDendrites.size();
+      this->_numDendrites += _basalsFragments.size();
 
 
-        if (!imarisFile_.empty()) {
-            this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
-        }
+      if (!imarisFile_.empty())
+      {
+        this->_imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
+      }
 
-        procesSkel(apiDendrite, basalDendrites);
-        removeDuplicates();
-        generateSoma();
+      if (!longsFile_.empty())
+      {
+        this->_longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
+      }
 
-        if (!longsFile_.empty()) {
-            addSpinesLongs(longsFile_);
-
-            //Añadimos la geometria de las espinas de Filament.
-            if (!apiDendrite.fragments.empty()) {
-                auto apiSpines = generateSpines(apiDendrite);
-                this->spines.insert(apiSpines.begin(), apiSpines.end());
-            }
-
-            std::vector<spineSet> basalsSpines;
-            for (const auto &basal:basalDendrites) {
-                auto spineSet_ = generateSpines(basal);
-                this->spines.insert(spineSet_.begin(), spineSet_.end());
-            }
-
-        } else {
-            procesSpinesFilament(apiDendrite, basalDendrites);
-        }
-
-        improveInitialFragments();
-
+      this->reComputeSkel(connectionThreshold_);
     }
 
-    void Neuron::addSpinesLongs(const std::string &longsFile_) {
-        this->longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
+    void Neuron::reComputeSkel(float connectionThreshold)
+    {
+      //Clean to new iteration.
+      delete _apical;
+      _apical = nullptr;
+
+      for (auto& basal: _basals) {
+        delete basal;
+      }
+
+      _basals.clear();
+
+      _reamingSegments = 0;
+      _reamingSpines = 0;
+
+      this->_connectionThreshold = connectionThreshold;
+      procesSkel(connectionThreshold);
+      removeDuplicates();
+      generateSoma();
+
+      if (this->_longsSpines.empty()) {
+        procesSpinesFilament();
+      } else {
         procesSpinesLongs();
+      }
+
+      improveInitialFragments();
     }
+
 
     std::vector<Section> Neuron::generateFragments(TDendrite dendrite) {
         removeFragments(dendrite);
@@ -97,8 +113,8 @@ namespace skelgenerator {
     }
 
     Section Neuron::getFragment(const TFragment &fragment) {
-        Section sectionSkel (fragment.nombre + "_" + std::to_string(this->segmentCounter));
-        this->segmentCounter++;
+        Section sectionSkel (fragment.nombre + "_" + std::to_string(this->_segmentCounter));
+        this->_segmentCounter++;
         for (unsigned int cir = 0; cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
@@ -154,7 +170,7 @@ namespace skelgenerator {
             }
 
 
-            if (minDistance < connectionThreshold) {
+            if (minDistance < _connectionThreshold) {
                 //std::cout << minDistance << std::endl;
                 TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
                 conns.push_back(conn);
@@ -266,11 +282,6 @@ namespace skelgenerator {
                 return subDendrite;
             }
 
-
-//            if (firstCoon->p1 == 0) {
-//                firstCoon->p1++;
-//            }
-
             auto segmentSplit = fragment.split(firstCoon->p1);
             auto segment1 = std::get<0>(segmentSplit);
             auto segment2 = std::get<1>(segmentSplit);
@@ -295,21 +306,21 @@ namespace skelgenerator {
 
         //Calculamos los puntos de la rodaja 2D a partir del centro y del radio del soma
 
-        auto centerX = this->soma.getPoint()[0];
-        auto centerY = this->soma.getPoint()[1];
+        auto centerX = this->_soma.getPoint()[0];
+        auto centerY = this->_soma.getPoint()[1];
 
         for (int i = 0; i < 360; i += 10) {
-            auto x = centerX + this->soma.getRadius() * cos(degreesToRadians(i));
-            auto y = centerY + this->soma.getRadius() * sin(degreesToRadians(i));
-            Eigen::Vector3d point(x, y, this->soma.getPoint()[2]);
+            auto x = centerX + this->_soma.getRadius() * cos(degreesToRadians(i));
+            auto y = centerY + this->_soma.getRadius() * sin(degreesToRadians(i));
+            Eigen::Vector3d point(x, y, this->_soma.getPoint()[2]);
             SamplePoint pointr(point, 0.15f);
             ss << pointr.to_asc(tab) << std::endl;
         }
 
         ss << ")" << std::endl;
-        if (this->apical != nullptr)
-            ss << this->apical->to_asc(tab, 0);
-        for (auto basal:this->basals) {
+        if (this->_apical != nullptr)
+            ss << this->_apical->to_asc(tab, 0);
+        for (auto basal:this->_basals) {
             ss << basal->to_asc(tab, 0);
         }
         return ss.str();
@@ -332,79 +343,68 @@ namespace skelgenerator {
             ss << ")" << std::endl;
         }
 
-        if (this->apical != nullptr)
-            ss << this->apical->to_asc(tab, 0);
-        for (auto basal:this->basals) {
+        if (this->_apical != nullptr)
+            ss << this->_apical->to_asc(tab, 0);
+        for (auto basal:this->_basals) {
             ss << basal->to_asc(tab, 0);
         }
         return ss.str();
     }
 
-    void Neuron::procesSkel(const TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
+    void Neuron::procesSkel(float connectionThreshold)
+    {
+      this->_connectionThreshold = connectionThreshold;
         int reamingFragments = 0;
-        if (!apiDendrite.fragments.empty()) {
-            auto apiFragments = generateFragments(apiDendrite);
-            auto apiDendriteSkel = new Dendrite();
+        if (!_apiFragments.empty()) {
+            this->_apical = new Dendrite();
 
-            auto resultApi = computeDendrite(apiFragments);
-            apiDendriteSkel->setDendrite(std::get<0>(resultApi));
-            apiDendriteSkel->setDendtype(APICAL);
-            this->apical = apiDendriteSkel;
+            auto resultApi = computeDendrite(_apiFragments);
+            this->_apical->setDendrite(std::get<0>(resultApi));
+            this->_apical->setDendtype(APICAL);
 
             reamingFragments += std::get<1>(resultApi);
         }
 
-        std::vector<std::vector<Section>> basalsFragments;
-        for (const auto &basalDedrite: basalDendrites) {
-            basalsFragments.push_back(generateFragments(basalDedrite));
-        }
-
-
-        for (const auto &basalFragments: basalsFragments) {
+        for (const auto &basalFragments: _basalsFragments) {
             auto basalDend = new Dendrite();
             auto result = computeDendrite(basalFragments);
             basalDend->setDendtype(BASAL);
             basalDend->setDendrite(std::get<0>(result));
             reamingFragments += std::get<1>(result);
-            this->basals.push_back(basalDend);
+            this->_basals.push_back(basalDend);
         }
-        this->reamingSegments = reamingFragments;
+        this->_reamingSegments = reamingFragments;
     }
 
     void Neuron::procesSpinesLongs() {
         spineSet longSpinesSet;
-        for (const auto& spine: this->longsSpines) {
+        for (const auto& spine: this->_longsSpines) {
             longSpinesSet.insert(std::make_shared<Spine>(spine));
         }
 
-        if (apical != nullptr) {
-            addSpines(apical, longSpinesSet);
+        if (_apical != nullptr) {
+            addSpines(_apical, longSpinesSet);
         }
 
-        for (size_t i = 0; i < basals.size(); i++) {
-            addSpines(basals[i], longSpinesSet);
+        for (size_t i = 0; i < _basals.size(); i++) {
+            addSpines(_basals[i], longSpinesSet);
         }
+
+        std::cout << _reamingSpines << " Espinas sin conectar" << std::endl;
     }
 
 
-    void Neuron::procesSpinesFilament(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites) {
-        if (!apiDendrite.fragments.empty()) {
-            auto apiSpines = generateSpines(apiDendrite);
-            this->spines.insert(apiSpines.begin(), apiSpines.end());
-            addSpines(apical, apiSpines);
+    void Neuron::procesSpinesFilament()
+    {
+        if (!this->_apiSpines.empty()) {
+            addSpines(_apical, this->_apiSpines);
         }
 
-        std::vector<spineSet> basalsSpines;
-        for (const auto &basal:basalDendrites) {
-            auto spineSet_ = generateSpines(basal);
-            this->spines.insert(spineSet_.begin(), spineSet_.end());
-            basalsSpines.push_back(spineSet_);
+        for (size_t i = 0; i < this->_basalsSpines.size(); i++) {
+            addSpines(_basals[i], _basalsSpines[i]);
         }
 
-
-        for (size_t i = 0; i < basalsSpines.size(); i++) {
-            addSpines(basals[i], basalsSpines[i]);
-        }
+        std::cout << _reamingSpines << " Espinas sin conectar" << std::endl;
     }
 
     spineSet Neuron::generateSpines(const TDendrite &dendrite) {
@@ -425,14 +425,14 @@ namespace skelgenerator {
             auto pos = std::get<1>(result);
             auto min = std::get<2>(result);
 
-            if (min < connectionThreshold) {
+            if (min < _connectionThreshold) {
                 if (pos == 0) {
                     sec->addPoint(spine, 1);
                 } else {
                     sec->addPoint(spine, pos);
                 }
             } else {
-                std::cout << "Error espina no conectada: Dist " << min << " id: " << spine->getId() << std::endl;
+                _reamingSpines++;
             }
         }
     }
@@ -491,25 +491,25 @@ namespace skelgenerator {
     }
 
     int Neuron::getReamingSegments() const {
-        return reamingSegments;
+        return _reamingSegments;
     }
 
     int Neuron::getReamingSpines() const {
-        return reamingSpines;
+        return _reamingSpines;
     }
 
     void Neuron::generateSoma() {
-        if (numDendrites == 1) { //Special case only 1 dendrite not have any information thus the soma is a placeholder.
-            auto firstSec = this->basals[0]->getDendrite()->getSec();
+        if (_numDendrites == 1) { //Special case only 1 dendrite not have any information thus the soma is a placeholder.
+            auto firstSec = this->_basals[0]->getDendrite()->getSec();
             std::shared_ptr<SamplePoint> firstPoint = firstSec[0];
             std::shared_ptr<SamplePoint> secondPoint = firstSec[1];
             Eigen::Vector3d dir = firstPoint->getPoint() - secondPoint->getPoint();
             dir.normalize();
             Eigen::Vector3d somaCenter = firstPoint->getPoint() + dir;
-            this->soma = SamplePoint(somaCenter, 0.9);
+            this->_soma = SamplePoint(somaCenter, 0.9);
         } else {
             Eigen::Vector3d somaBasal(0, 0, 0);
-            for (auto &basal: this->basals) {
+            for (auto &basal: this->_basals) {
                 auto sec = basal->getDendrite()->getSec();
                 somaBasal += sec[0]->getPoint();
             }
@@ -519,28 +519,28 @@ namespace skelgenerator {
             auto somaRadius = 1000000;
             Eigen::Vector3d somaCenter(0, 0, 0);
 
-            if (apical != nullptr) {
-                auto secApical = apical->getDendrite()->getSec();
+            if (_apical != nullptr) {
+                auto secApical = _apical->getDendrite()->getSec();
                 Eigen::Vector3d somaApical = secApical[0]->getPoint();
                 Zplane += somaApical[2];
 
-                somaCenter = (somaApical + somaBasal) / (1 + this->basals.size());
+                somaCenter = (somaApical + somaBasal) / (1 + this->_basals.size());
 
                 if ((somaApical - somaCenter).norm() < somaRadius) {
                     somaRadius = (somaApical - somaCenter).norm();
                 }
 
             } else {
-                somaCenter = somaBasal / this->basals.size();
+                somaCenter = somaBasal / this->_basals.size();
             }
 
-            for (auto &basal:this->basals) {
+            for (auto &basal:this->_basals) {
                 Eigen::Vector3d firstPoint = basal->getDendrite()->getSec()[0]->getPoint();
                 Zplane += firstPoint[2];
                 if ((firstPoint - somaCenter).norm() < somaRadius)
                     somaRadius = (firstPoint - somaCenter).norm();
             }
-            this->soma = SamplePoint(somaCenter, somaRadius);
+            this->_soma = SamplePoint(somaCenter, somaRadius);
         }
 
 
@@ -550,11 +550,11 @@ namespace skelgenerator {
         int counter = 1;
         std::stringstream ssSkel;
         std::stringstream ssSpines;
-        ssSkel << this->soma.to_swc(counter, -1, 1) << std::endl;
-        if (this->apical != nullptr) {
-            ssSkel << this->apical->to_swc(counter, spines_);
+        ssSkel << this->_soma.to_swc(counter, -1, 1) << std::endl;
+        if (this->_apical != nullptr) {
+            ssSkel << this->_apical->to_swc(counter, spines_);
         }
-        for (const auto &basal: this->basals) {
+        for (const auto &basal: this->_basals) {
             ssSkel << basal->to_swc(counter, spines_);
         }
         return ssSkel.str();
@@ -570,7 +570,7 @@ namespace skelgenerator {
             boost::filesystem::remove_all(dirPath);
             boost::filesystem::create_directory(dirPath);
         }
-        for (const auto &spine: this->spines) {
+        for (const auto &spine: this->_spines) {
             spine->to_obj(dirPath, i);
             i++;
         }
@@ -590,27 +590,27 @@ namespace skelgenerator {
             boost::filesystem::remove_all(dirPath);
             boost::filesystem::create_directory(dirPath);
         }
-        for (const auto &spine: this->spines) {
+        for (const auto &spine: this->_spines) {
             spine->to_obj_without_base(dirPath, i);
             i++;
         }
     }
 
     void Neuron::removeDuplicates(float threshold) {
-        if (this->apical != nullptr) {
-            this->apical->removeDuplication(threshold);
+        if (this->_apical != nullptr) {
+            this->_apical->removeDuplication(threshold);
         }
-        for (const auto &basal: basals) {
+        for (const auto &basal: _basals) {
             basal->removeDuplication(threshold);
         }
     }
 
     const spineSet &Neuron::getSpines() const {
-        return spines;
+        return _spines;
     }
 
     bool Neuron::hasImarisSpines() const {
-        return !imarisSpines.empty();
+        return !_imarisSpines.empty();
     }
 
     void Neuron::imarisSpinesToObj(std::string dirPath) {
@@ -621,8 +621,8 @@ namespace skelgenerator {
             boost::filesystem::create_directory(dirPath);
         }
 
-        for (size_t i = 0; i < imarisSpines.size(); ++i) {
-            const TSpineImaris &imarisSpine = imarisSpines[i];
+        for (size_t i = 0; i < _imarisSpines.size(); ++i) {
+            const TSpineImaris &imarisSpine = _imarisSpines[i];
             std::ofstream file;
             std::string path = dirPath + "/" + std::to_string(i) + ".obj";
             file.open(path, std::ios::out);
@@ -647,24 +647,23 @@ namespace skelgenerator {
     }
 
     const std::vector<TSpineImaris> &Neuron::getImarisSpines() const {
-        return imarisSpines;
+        return _imarisSpines;
     }
 
     const std::string &Neuron::getApiFile() const {
-        return apiFile;
-        return apiFile;
+        return _apiFile;
     }
 
     const std::string &Neuron::getImarisFile() const {
-        return imarisFile;
+        return _imarisFile;
     }
 
     const std::vector<std::string> &Neuron::getBasalFiles() const {
-        return basalFiles;
+        return _basalFiles;
     }
 
     bool Neuron::hasFilamentSpines() const {
-        return !spines.empty();
+        return !_spines.empty();
     }
 
     Neuron::OOBB Neuron::getBB(const TFragment &fragment) {
@@ -868,11 +867,11 @@ namespace skelgenerator {
 
 
     void Neuron::addImarisSpines(const std::string &imarisFile_) {
-        this->imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
+        this->_imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
     }
 
     void Neuron::clearImarisSpines() {
-        this->imarisSpines.clear();
+        this->_imarisSpines.clear();
     }
 
     void Neuron::removeFragments(TDendrite& dendrite) {
@@ -945,20 +944,24 @@ namespace skelgenerator {
     }
 
     void Neuron::improveInitialFragments() {
-       if (this->apical != nullptr) {
-           this->apical->improveInit();
+       if (this->_apical != nullptr) {
+           this->_apical->improveInit();
        }
 
-       for (auto& basal:this->basals) {
+       for (auto& basal:this->_basals) {
            basal->improveInit();
        }
     }
 
     Neuron::~Neuron() {
-        for (const auto basal: basals) {
+        for (const auto basal: _basals) {
             delete( basal);
         }
-        delete apical;
+        delete _apical;
+    }
+
+    void Neuron::addSpinesLongs(const std::string &longsFile_) {
+        this->_longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
     }
 
 }

@@ -20,19 +20,25 @@ namespace skelgenerator {
     **/
 
     class SKELGENERATOR_API Neuron {
-        std::string apiFile, imarisFile;
-        std::vector<std::string> basalFiles;
-        SamplePoint soma;
-        Dendrite* apical;
-        std::vector<Dendrite *> basals;
-        float connectionThreshold;
-        int reamingSegments;
-        int reamingSpines;
-        int numDendrites;
-        spineSet spines;
-        std::vector<TSpineImaris> imarisSpines;
-        std::vector<std::vector<SamplePoint>> longsSpines;
-        int segmentCounter;
+        std::string _apiFile, _imarisFile;
+        std::vector<std::string> _basalFiles;
+        std::vector<Section> _apiFragments;
+        spineSet _apiSpines;
+        std::vector<std::vector<Section>> _basalsFragments;
+        std::vector<spineSet> _basalsSpines;
+        int _segmentCounter;
+        SamplePoint _soma;
+        Dendrite* _apical;
+        std::vector<Dendrite *> _basals;
+        float _connectionThreshold;
+        int _reamingSegments;
+        int _reamingSpines;
+        int _numDendrites;
+        spineSet _spines;
+        std::vector<TSpineImaris> _imarisSpines;
+        std::vector<std::vector<SamplePoint>> _longsSpines;
+
+
 
     private:
         bool incorrectConecctions;
@@ -43,7 +49,10 @@ namespace skelgenerator {
             double d0,d1,d2;
         };
 
-        Neuron(const std::string& apiFile_,const  std::vector<std::string>& basalFiles_, const std::string& imarisFile_ = std::string(), const std::string& longsFile_ = std::string() , float connectionThreshold_ = 1.1f);
+        Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_,
+               const std::string &imarisFile_ = "", const std::string &longsFile_ = "", float connectionThreshold_ = 1.0f);
+
+        void reComputeSkel(float connectionThreshold);
 
         virtual ~Neuron();
 
@@ -94,11 +103,11 @@ namespace skelgenerator {
         std::tuple<SubDendrite *, int> computeDendrite(std::vector<Section> fragments);
 
 
-        void procesSkel(const TDendrite& apiDendrite,const std::vector<TDendrite>& basalDendrites);
+        void procesSkel(float connectionThreshold);
 
         void generateSoma();
 
-        void procesSpinesFilament(TDendrite &apiDendrite, const std::vector<TDendrite> &basalDendrites);
+        void procesSpinesFilament();
 
         spineSet generateSpines(const TDendrite &dendrite);
 
@@ -121,6 +130,7 @@ namespace skelgenerator {
         void exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, std::string prefixName);
 
         void improveInitialFragments();
+
     };
 }
 
