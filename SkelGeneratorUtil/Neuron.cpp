@@ -154,12 +154,12 @@ namespace skelgenerator {
             int minPoint2 = 0;
             for (int i = 0; i < fragment.size(); i++) {
                 auto p1 = fragment[i]->getPoint();
-                //auto p1r = (*fragment)[i]->getRadius();
+                auto p1r = fragment[i]->getRadius();
                 for (int j = 0; j < anotherFragment.size(); j++) {
                     auto p2 = anotherFragment[j]->getPoint();
-                   // auto p2r = (*anotherFragment)[j]->getRadius();
+                    auto p2r = anotherFragment[j]->getRadius();
                     float dist = (p1 - p2).norm();
-                    //dist = dist - p1r - p2r;
+                    dist = dist - p1r - p2r;
 
                     if (dist < minDistance) {
                         minDistance = dist;
