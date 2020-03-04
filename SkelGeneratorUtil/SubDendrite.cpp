@@ -93,12 +93,18 @@ namespace skelgenerator {
                     delete(this->ramification1);
                     this->setRamification1(nullptr);
                 } else {
-                    if (r1r1 != nullptr) {
+                    if (r1r1 != nullptr && r1r1->getSec().size() > 0) {
                         auto r1r1Sec = r1r1->getSec();
                         auto p = r1r1Sec[0]->getPoint();
                         auto r = r1r1Sec[0]->getRadius();
                         r1Sec.addPoint(p, r);
                         r1r1Sec.remove(0);
+                    } else {
+                        auto r1r2Sec = r1r2->getSec();
+                        auto p = r1r2Sec[0]->getPoint();
+                        auto r = r1r2Sec[0]->getRadius();
+                        r1Sec.addPoint(p, r);
+                        r1r2Sec.remove(0);
                     }
                 }
             }
@@ -124,12 +130,18 @@ namespace skelgenerator {
                     delete(this->ramification2);
                     this->setRamification2(nullptr);
                 } else {
-                    if (r2r1 != nullptr) {
+                    if (r2r1 != nullptr && r2r1->getSec().size() > 0) {
                         auto r2r1Sec = r2r1->getSec();
                         auto p = r2r1Sec[0]->getPoint();
                         auto r = r2r1Sec[0]->getRadius();
                         r2Sec.addPoint(p, r);
                         r2r1Sec.remove(0);
+                    } else {
+                        auto r2r2Sec = r2r2->getSec();
+                        auto p = r2r2Sec[0]->getPoint();
+                        auto r = r2r2Sec[0]->getRadius();
+                        r2Sec.addPoint(p, r);
+                        r2r2Sec.remove(0);
                     }
                 }
             }

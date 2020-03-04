@@ -123,8 +123,8 @@ namespace skelgenerator {
         std::string line;
         std::ifstream file(apiFile);
 
-        if (file.is_open()) {
-
+        if (!file.is_open()) {
+            throw "Can't open apical file: " + apiFile;
         }
 
 
