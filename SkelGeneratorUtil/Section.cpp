@@ -18,7 +18,7 @@ namespace skelgenerator {
         this->points.push_back(samplePoint);
     }
 
-    int Section::size() {
+    int Section::size() const {
         return static_cast<int>(points.size());
     }
 
@@ -45,6 +45,7 @@ namespace skelgenerator {
         int counter =1 ;
         if (this->size() == 0) {
             ss << tab  << "Empty Section: " << this->name;
+            std::cerr << "[ERROR] Empty section founded" << std::endl;
         }
         ss << tab << "; " << this->name << std::endl;
         for (size_t i = init;i< points.size(); i++) {

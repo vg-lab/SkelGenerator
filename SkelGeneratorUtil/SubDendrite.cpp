@@ -80,7 +80,7 @@ namespace skelgenerator {
             for (const auto &point : this->getSec()) {
                 for (int i = r1Sec.size() - 1; i >= 0; i--) {
                     float d = (point->getPoint() - r1Sec[i]->getPoint()).norm();
-                    if (d < threshold) {
+                    if (d < threshold && r1Sec.size() > 2) {
                         r1Sec.remove(i);
                     }
                 }
@@ -117,7 +117,7 @@ namespace skelgenerator {
             auto r2Sec = this->getRamification2()->getSec();
             for (const auto &point : this->getSec()) {
                 for (int i = r2Sec.size() - 1; i >= 0; i--) {
-                    if ((point->getPoint() - r2Sec[i]->getPoint()).norm() < threshold) {
+                    if ((point->getPoint() - r2Sec[i]->getPoint()).norm() < threshold && r2Sec.size() > 2) {
                         r2Sec.remove(i);
                     }
                 }

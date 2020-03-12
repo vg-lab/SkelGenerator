@@ -16,6 +16,8 @@
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
 #include <fstream>
+#include <QThreadPool>
+#include <QtConcurrent/QtConcurrent>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
@@ -73,6 +75,7 @@ namespace skelgenerator {
 
     void Neuron::reComputeSkel(float connectionThreshold)
     {
+        std::cout << "Recomputing Neuron with threshold: " << connectionThreshold << std::endl;
       //Clean to new iteration.
       delete _apical;
       _apical = nullptr;
@@ -148,33 +151,46 @@ namespace skelgenerator {
         //std::cout << "Processing fragment: " << fragment->getName() << "\n" << std::flush;
         reamingFragments.erase(fragment);
         std::vector<TConn> conns;
-        for (auto anotherFragment : reamingFragments) {
-            float minDistance = 1000;
-            int minPoint1 = 0;
-            int minPoint2 = 0;
-            for (int i = 0; i < fragment.size(); i++) {
-                auto p1 = fragment[i]->getPoint();
-                auto p1r = fragment[i]->getRadius();
-                for (int j = 0; j < anotherFragment.size(); j++) {
-                    auto p2 = anotherFragment[j]->getPoint();
-                    auto p2r = anotherFragment[j]->getRadius();
-                    float dist = (p1 - p2).norm();
-                    dist = dist - p1r - p2r;
+        std::vector<QFuture<void>> futures;
+        futures.reserve(reamingFragments.size());
+        QSemaphore sem(1);
+        for (const auto& anotherFragment : reamingFragments) {
+            auto future = QtConcurrent::run(&_pool, [&]() {
+                float minDistance = 1000;
+                int minPoint1 = 0;
+                int minPoint2 = 0;
+                for (int i = 0; i < fragment.size(); i++) {
+                    auto p1 = fragment[i]->getPoint();
+                    auto p1r = fragment[i]->getRadius();
+                    for (int j = 0; j < anotherFragment.size(); j++) {
+                        auto p2 = anotherFragment[j]->getPoint();
+                        auto p2r = anotherFragment[j]->getRadius();
+                        float dist = (p1 - p2).norm();
+                        dist = dist - p1r - p2r;
 
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        minPoint1 = i;
-                        minPoint2 = j;
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            minPoint1 = i;
+                            minPoint2 = j;
+                        }
                     }
                 }
-            }
 
 
-            if (minDistance < _connectionThreshold) {
-                //std::cout << minDistance << std::endl;
-                TConn conn{fragment, minPoint1, anotherFragment, minPoint2};
-                conns.push_back(conn);
-            }
+                if (minDistance < _connectionThreshold) {
+                    //std::cout << minDistance << std::endl;
+                    sem.acquire();
+                    conns.push_back({fragment,minPoint1,anotherFragment,minPoint2});
+                    sem.release();
+                }
+            });
+
+            futures.push_back(future);
+        }
+
+        //Wait for all threads
+        for ( auto& future: futures){
+            future.waitForFinished();
         }
 
         //Le damos la vuelta a fragmentos al reves
@@ -235,12 +251,12 @@ namespace skelgenerator {
             if (conns.size() == 1 && (conns[0].p1 == fragment.size() - 1 || conns[0].p1 ==
                                                                              0)) { // Si solo tiene una conexion se unen el segmento actual con el encontrado
                 auto con = conns[0];
-                std::cout << "Segmento suelto " << con.p1 << " = " << fragment.size() - 1 << std::endl;
+                //std::cout << "Segmento suelto " << con.p1 << " = " << fragment.size() - 1 << std::endl;
                 reamingFragments.erase(fragment);
                 reamingFragments.erase(con.fragment2);
                 //Comprobamos que el segmento con el que vamos a unir no este del reves
                 if (con.p2 > con.fragment2.size() / 2) {
-                    std::cout << "Rama del reves" << std::endl;
+                    //std::cout << "Rama del reves" << std::endl;
                     con.fragment2.reverse();
 
                     con.p2 = (con.fragment2.size() - con.p2);
@@ -266,7 +282,7 @@ namespace skelgenerator {
             }
 
             if (connsInSamePoint.size() > 1) {
-                std::cout << "more than 1 conection in one point :" << connsInSamePoint.size() << std::endl;
+                //std::cout << "more than 1 conection in one point :" << connsInSamePoint.size() << std::endl;
 
                 int splitPoint = std::max(1, firstCoon->p1 - static_cast<int>(connsInSamePoint.size()));
 

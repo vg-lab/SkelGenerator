@@ -8,6 +8,7 @@
 #include <skelgenerator/api.h>
 
 #include <set>
+#include <QThreadPool>
 #include "VRMLReader.h"
 #include "SamplePoint.h"
 #include "Dendrite.h"
@@ -37,6 +38,7 @@ namespace skelgenerator {
         spineSet _spines;
         std::vector<TSpineImaris> _imarisSpines;
         std::vector<std::vector<SamplePoint>> _longsSpines;
+        QThreadPool _pool;
 
 
 
@@ -115,7 +117,7 @@ namespace skelgenerator {
 
         std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, std::shared_ptr<Spine> spine);
 
-        void removeDuplicates(float threshold = 0.75);
+        void removeDuplicates(float threshold = 0.5f);
 
         void procesSpinesLongs();
 

@@ -26,7 +26,7 @@ namespace skelgenerator {
         explicit Section(const std::string& name);
 
         void addPoint(std::shared_ptr<SamplePoint> &samplePoint);
-        int size();
+        int size() const;
 
         void remove(int index);
 
