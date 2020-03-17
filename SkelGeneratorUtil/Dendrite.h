@@ -38,6 +38,8 @@ namespace skelgenerator {
 
 
         void improveInit();
+
+        void forceTwoInitPoints();
     };
 }
 

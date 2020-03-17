@@ -133,6 +133,7 @@ namespace skelgenerator {
 
         void improveInitialFragments();
 
+        void forceTwoInitPoints();
     };
 }
 

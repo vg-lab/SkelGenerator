@@ -34,10 +34,11 @@ namespace skelgenerator {
       this->_apical = nullptr;
       this->_numDendrites = 0;
       this->_segmentCounter = 0;
+      this->_reamingSpines = 0;
+      this->_connectionThreshold = connectionThreshold_;
       if (!apiFile_.empty())
       {
         auto apiDendrite = VRMLReader::readVrmlApical(apiFile_);
-        removeFragments(apiDendrite);
         this->_apiFragments = generateFragments(apiDendrite);
         this->_apiSpines = generateSpines(apiDendrite);
         this->_spines.insert(_apiSpines.begin(),_apiSpines.end());
@@ -49,7 +50,6 @@ namespace skelgenerator {
         auto readedBasals = VRMLReader::readBasalFile(basalFile);
         for (auto &basal: readedBasals)
         {
-          removeFragments(basal);
           this->_basalsFragments.push_back(generateFragments(basal));
           auto basalSpines = generateSpines(basal);
           this->_basalsSpines.push_back(generateSpines(basal));
@@ -91,6 +91,7 @@ namespace skelgenerator {
 
       this->_connectionThreshold = connectionThreshold;
       procesSkel(connectionThreshold);
+      forceTwoInitPoints();
       removeDuplicates();
       generateSoma();
 
@@ -105,10 +106,13 @@ namespace skelgenerator {
 
 
     std::vector<Section> Neuron::generateFragments(TDendrite dendrite) {
-        removeFragments(dendrite);
+//       removeFragments(dendrite);
         std::vector<Section> fragments;
         for (const auto &fragment : dendrite.fragments) {
-            fragments.push_back(getFragment(fragment));
+            auto section = getFragment(fragment);
+            if (section.size() > 0) {
+                fragments.push_back(section);
+            }
         }
 
         return fragments;
@@ -118,7 +122,7 @@ namespace skelgenerator {
     Section Neuron::getFragment(const TFragment &fragment) {
         Section sectionSkel (fragment.nombre + "_" + std::to_string(this->_segmentCounter));
         this->_segmentCounter++;
-        for (unsigned int cir = 0; cir < fragment.nCircles; cir++) {
+        for (unsigned int cir = std::min(5u,fragment.nCircles - 7); cir < fragment.nCircles; cir++) {
             auto medio = Eigen::Vector3d(0, 0, 0);
             for (int i = 0; i < 17; i++) {
                 medio += fragment.points[cir * 17 + i];
@@ -251,17 +255,17 @@ namespace skelgenerator {
             if (conns.size() == 1 && (conns[0].p1 == fragment.size() - 1 || conns[0].p1 ==
                                                                              0)) { // Si solo tiene una conexion se unen el segmento actual con el encontrado
                 auto con = conns[0];
-                //std::cout << "Segmento suelto " << con.p1 << " = " << fragment.size() - 1 << std::endl;
+                std::cout << "Segmento suelto " << con.p1 << " = " << fragment.size() - 1 << std::endl;
                 reamingFragments.erase(fragment);
                 reamingFragments.erase(con.fragment2);
                 //Comprobamos que el segmento con el que vamos a unir no este del reves
                 if (con.p2 > con.fragment2.size() / 2) {
-                    //std::cout << "Rama del reves" << std::endl;
+                    std::cout << "Rama del reves" << std::endl;
                     con.fragment2.reverse();
 
                     con.p2 = (con.fragment2.size() - con.p2);
                 }
-                if (con.p1 == 0) {
+                if (con.p1 == 0 && con.p2 != 0) {
                     auto unionSegment = Section::unionSection(con.fragment2, fragment);
                     return computeSubDendrite(unionSegment, con.p2, reamingFragments);
                 } else {
@@ -969,6 +973,7 @@ namespace skelgenerator {
        }
     }
 
+
     Neuron::~Neuron() {
         for (const auto basal: _basals) {
             delete( basal);
@@ -978,6 +983,16 @@ namespace skelgenerator {
 
     void Neuron::addSpinesLongs(const std::string &longsFile_) {
         this->_longsSpines = VRMLReader::readImarisSpinesLong(longsFile_);
+    }
+
+    void Neuron::forceTwoInitPoints() {
+        if (_apical != nullptr) {
+            _apical->forceTwoInitPoints();
+        }
+
+        for (auto& basal: _basals) {
+            basal->forceTwoInitPoints();
+        }
     }
 
 }

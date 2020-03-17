@@ -60,6 +60,19 @@ namespace skelgenerator {
     Dendrite::~Dendrite() {
         delete (this->dendrite);
     }
+
+    void Dendrite::forceTwoInitPoints(){
+        auto dend = this->dendrite;
+        while (dend->getSec().size() < 2) {
+            if (dend->getRamification1() != nullptr && dend->getRamification1()->getSec().size() > 0) {
+                dend->getSec().addPoint(dend->getRamification1()->getSec()[0]);
+                dend->getRamification1()->getSec().remove(0);
+            } else if (dend->getRamification2() != nullptr && dend->getRamification2()->getSec().size() > 0) {
+                dend->getSec().addPoint(dend->getRamification2()->getSec()[0]);
+                dend->getRamification2()->getSec().remove(0);
+            }
+        }
+    }
 }
 
 
