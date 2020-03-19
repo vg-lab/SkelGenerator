@@ -89,7 +89,8 @@ namespace skelgenerator {
         const spineSet &getSpines() const;
 
         static Neuron::OOBB getBB(const TFragment& fragment);
-        static bool collide(Neuron::OOBB BB1, Neuron::OOBB BB2);
+
+        static bool collide(const Neuron::OOBB& BB1, const OOBB &BB2);
 
 
 
@@ -111,11 +112,11 @@ namespace skelgenerator {
 
         void procesSpinesFilament();
 
-        spineSet generateSpines(const TDendrite &dendrite);
+        static spineSet generateSpines(const TDendrite &dendrite);
 
         void addSpines(Dendrite *dendrite, spineSet &spines);
 
-        std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, std::shared_ptr<Spine> spine);
+        static std::tuple<Section *, int, float> getPosSpine(SubDendrite *subDendrite, const std::shared_ptr<Spine>& spine);
 
         void removeDuplicates(float threshold = 0.5f);
 
@@ -125,15 +126,17 @@ namespace skelgenerator {
 
         //float computeOverlap(const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB1,const std::pair<Eigen::Vector3d,Eigen::Vector3d>& BB2);
 
-        void removeFragments(TDendrite& dendrite);
+        static void removeFragments(TDendrite& dendrite);
 
-        bool checkPoints(const OOBB& oobb, const TFragment& fragment);
+        static bool checkPointsInsideBB(const OOBB& oobb, const TFragment& fragment);
 
-        void exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, std::string prefixName);
+        static void exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, const std::string& prefixName);
 
         void improveInitialFragments();
 
         void forceTwoInitPoints();
+
+        static bool checkPointsInsideMesh(const TFragment &cfragment, const TFragment &ifragment);
     };
 }
 

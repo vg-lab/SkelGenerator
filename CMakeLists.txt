@@ -11,6 +11,12 @@ if( "${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}" )
     message( FATAL "no in source building allowed." )
 endif( )
 
+if( NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VCG/vcg/complex/all_types.h )
+    message( FATAL_ERROR "VCG missing, run: git submodule update --init")
+endif( )
+
+set (VCG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/VCG")
+
 list( APPEND CMAKE_MODULE_PATH
         ${PROJECT_SOURCE_DIR}/CMake
         ${CMAKE_SOURCE_DIR}/CMake/common
@@ -32,6 +38,7 @@ set( COMMON_PROJECT_DOMAIN gmrv.es )
 
 include( Common )
 
+common_find_package(VCG SYSTEM REQUIRED)
 common_find_package( Qt5Core SYSTEM REQUIRED )
 common_find_package( Qt5Widgets SYSTEM REQUIRED )
 common_find_package(Eigen3 SYSTEM REQUIRED)
@@ -43,6 +50,7 @@ list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Core
         Qt5::Widgets
         Eigen3
+        VCG
         ${Boost_LIBRARIES}
         )
 

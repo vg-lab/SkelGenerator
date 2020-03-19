@@ -7,6 +7,7 @@
 #include "Section.h"
 #include "Types.h"
 #include "Spine.h"
+#include "Mesh.h"
 #include <Eigen/Dense>
 #include <set>
 #include <unordered_set>
@@ -35,6 +36,7 @@ namespace skelgenerator {
       this->_numDendrites = 0;
       this->_segmentCounter = 0;
       this->_reamingSpines = 0;
+      this->_reamingSegments = 0;
       this->_connectionThreshold = connectionThreshold_;
       if (!apiFile_.empty())
       {
@@ -106,7 +108,7 @@ namespace skelgenerator {
 
 
     std::vector<Section> Neuron::generateFragments(TDendrite dendrite) {
-//       removeFragments(dendrite);
+        removeFragments(dendrite);
         std::vector<Section> fragments;
         for (const auto &fragment : dendrite.fragments) {
             auto section = getFragment(fragment);
@@ -140,8 +142,8 @@ namespace skelgenerator {
 
     std::tuple<SubDendrite *, int> Neuron::computeDendrite(std::vector<Section> fragments) {
         std::set<Section > reaminFragments;
-        for (size_t i = 0; i < fragments.size(); i++) {
-            reaminFragments.insert(fragments[i]);
+        for (const auto & fragment : fragments) {
+            reaminFragments.insert(fragment);
         }
 
         auto subDendrite = computeSubDendrite(fragments[0], 0, reaminFragments);
@@ -406,8 +408,8 @@ namespace skelgenerator {
             addSpines(_apical, longSpinesSet);
         }
 
-        for (size_t i = 0; i < _basals.size(); i++) {
-            addSpines(_basals[i], longSpinesSet);
+        for (auto & basal : _basals) {
+            addSpines(basal, longSpinesSet);
         }
 
         std::cout << _reamingSpines << " Espinas sin conectar" << std::endl;
@@ -457,7 +459,7 @@ namespace skelgenerator {
         }
     }
 
-    std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, std::shared_ptr<Spine> spine) {
+    std::tuple<Section *, int, float> Neuron::getPosSpine(SubDendrite *subDendrite, const std::shared_ptr<Spine>& spine) {
         const auto &insertPoint = spine->getInsertPoint();
         Section* sec = &(subDendrite->getSec());
         float min = 1000.0f;
@@ -725,7 +727,7 @@ namespace skelgenerator {
 
     // see https://www.geometrictools.com/Documentation/DynamicCollisionDetection.pdf
     //TODO check and optimize
-    bool Neuron::collide(Neuron::OOBB BB1, Neuron::OOBB BB2) {
+    bool Neuron::collide(const Neuron::OOBB& BB1, const Neuron::OOBB &BB2) {
         Eigen::Vector3d D = BB2.center - BB1.center;
         float c00 = BB1.a0.dot(BB2.a0);
         float c01 = BB1.a0.dot(BB2.a1);
@@ -899,6 +901,7 @@ namespace skelgenerator {
         auto cmp = [](int a, int b){return a > b;};
         std::set<int, decltype(cmp)> deletes(cmp);
         obbs.reserve(dendrite.fragments.size());
+
         for (const auto &fragment: dendrite.fragments) {
             obbs.push_back(getBB(fragment));
         }
@@ -906,9 +909,11 @@ namespace skelgenerator {
         for (size_t i = 0; i < obbs.size(); i++) {
             for (size_t j = i + 1 ; j < obbs.size(); j++) {
                 if (collide(obbs[i],obbs[j])){
-                    if (checkPoints(obbs[i],dendrite.fragments[j])) {
+                    if (checkPointsInsideBB(obbs[i], dendrite.fragments[j])
+                        && checkPointsInsideMesh(dendrite.fragments[i],dendrite.fragments[j])) {
                         deletes.insert(j);
-                    } else if (checkPoints(obbs[j], dendrite.fragments[i])) {
+                    } else if (checkPointsInsideBB(obbs[j], dendrite.fragments[i])
+                                && checkPointsInsideMesh(dendrite.fragments[j],dendrite.fragments[i])) {
                         deletes.insert(i);
                     }
                 }
@@ -921,7 +926,13 @@ namespace skelgenerator {
         }
     }
 
-    bool Neuron::checkPoints(const Neuron::OOBB& oobb, const TFragment &fragment) {
+    bool Neuron::checkPointsInsideMesh(const TFragment& outerFragment, const TFragment& innerFragment) {
+        Mesh outterMesh (outerFragment);
+        Mesh innerMesh (innerFragment);
+        return outterMesh.hasInside(innerMesh);
+    }
+
+    bool Neuron::checkPointsInsideBB(const Neuron::OOBB& oobb, const TFragment &fragment) {
         for (const auto& point: fragment.points) {
             Eigen::Vector3d v = point - oobb.center;
             auto projection0 = std::abs(oobb.a0.dot(v));
@@ -936,7 +947,7 @@ namespace skelgenerator {
         return true;
     }
 
-    void Neuron::exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, std::string prefixName) {
+    void Neuron::exportFragmentAndBB(const OOBB &oobb, const TFragment &fragment, const std::string& prefixName) {
         std::ofstream file;
 
         file.open("oobbs/" + prefixName + "-" + fragment.nombre + ".obj", std::ofstream::out);

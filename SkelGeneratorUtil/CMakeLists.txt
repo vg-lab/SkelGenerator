@@ -8,6 +8,7 @@ set(SKELGENERATORUTIL_SOURCES
         Spine.cpp
         SubDendrite.cpp
         VRMLReader.cpp
+        Mesh.cpp
         )
 
 set(SKELGENERATORUTIL_HEADERS
@@ -19,6 +20,7 @@ set(SKELGENERATORUTIL_HEADERS
         SubDendrite.h
         VRMLReader.h
         Types.h
+        Mesh.h
         )
 
 set(SKELGENERATORUTIL_LINK_LIBRARIES
@@ -34,3 +36,5 @@ if (MSVC)
 endif ()
 
 common_library(skelgeneratorutil)
+
+
