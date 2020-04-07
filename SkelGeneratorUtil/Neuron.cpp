@@ -19,18 +19,23 @@
 #include <fstream>
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
+#include <MeshReconstruct/MeshReconstructWrapper/MeshReconstruct.h>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 
 namespace skelgenerator {
 
-    Neuron::Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_,
-                   const std::string &imarisFile_, const std::string &longsFile_, float connectionThreshold_)
+    Neuron::Neuron( const std::string& apiFile_,
+                    const std::vector<std::string>& basalFiles_,
+                    const std::string& somaFile_,
+                    const std::string& imarisFile_,
+                    const std::string& longsFile_, float connectionThreshold_ )
     {
       //std::cout << "Conection Treshold " << connectionThreshold << std::endl;
       this->_apiFile = apiFile_;
       this->_imarisFile = imarisFile_;
       this->_basalFiles = basalFiles_;
+      this->_somaFile = somaFile_;
       this->incorrectConecctions = false;
       this->_apical = nullptr;
       this->_numDendrites = 0;
@@ -60,6 +65,10 @@ namespace skelgenerator {
       }
 
       this->_numDendrites += _basalsFragments.size();
+
+      if (!this->_somaFile.empty()) {
+        this->generateSomaContours();
+      }
 
 
       if (!imarisFile_.empty())
@@ -1005,6 +1014,11 @@ namespace skelgenerator {
             basal->forceTwoInitPoints();
         }
     }
+
+  void Neuron::generateSomaContours( )
+  {
+    auto m = meshre
+  }
 
 }
 

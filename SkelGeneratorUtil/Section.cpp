@@ -45,7 +45,7 @@ namespace skelgenerator {
         int counter =1 ;
         if (this->size() == 0) {
             ss << tab  << "Empty Section: " << this->name;
-            std::cerr << "[ERROR] Empty section founded" << std::endl;
+            std::cerr << "[ERROR] Empty section founded, this is an error on SkelGenerator" << std::endl;
         }
         ss << tab << "; " << this->name << std::endl;
         for (size_t i = init;i< points.size(); i++) {

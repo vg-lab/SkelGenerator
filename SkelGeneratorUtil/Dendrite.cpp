@@ -70,6 +70,8 @@ namespace skelgenerator {
             } else if (dend->getRamification2() != nullptr && dend->getRamification2()->getSec().size() > 0) {
                 dend->getSec().addPoint(dend->getRamification2()->getSec()[0]);
                 dend->getRamification2()->getSec().remove(0);
+            } else {
+                return;
             }
         }
     }

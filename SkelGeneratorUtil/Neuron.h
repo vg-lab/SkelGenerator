@@ -23,6 +23,7 @@ namespace skelgenerator {
     class SKELGENERATOR_API Neuron {
         std::string _apiFile, _imarisFile;
         std::vector<std::string> _basalFiles;
+        std::string _somaFile;
         std::vector<Section> _apiFragments;
         spineSet _apiSpines;
         std::vector<std::vector<Section>> _basalsFragments;
@@ -51,8 +52,10 @@ namespace skelgenerator {
             double d0,d1,d2;
         };
 
-        Neuron(const std::string &apiFile_, const std::vector<std::string> &basalFiles_,
-               const std::string &imarisFile_ = "", const std::string &longsFile_ = "", float connectionThreshold_ = 1.0f);
+        Neuron( const std::string& apiFile_,
+                const std::vector<std::string>& basalFiles_,
+                const std::string& somaFile_ = "", const std::string& imarisFile_ = "",
+                const std::string& longsFile_ = "", float connectionThreshold_ = 3 );
 
         void reComputeSkel(float connectionThreshold);
 
@@ -137,6 +140,8 @@ namespace skelgenerator {
         void forceTwoInitPoints();
 
         static bool checkPointsInsideMesh(const TFragment &cfragment, const TFragment &ifragment);
+
+      void generateSomaContours( );
     };
 }
 
