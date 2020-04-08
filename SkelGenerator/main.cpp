@@ -4,13 +4,11 @@
 
 using  namespace skelgenerator;
 
-    int main(int /*argc*/, char ** /*argv*/) {
+    int main(int argc, char ** argv) {
+        QApplication a(argc, argv);
+        MainWindow w;
+        w.show();
 
-        Neuron neuron( "", { "testRat.wrl" }, <#initializer#>, "", "", 0.2 );
-//        QApplication a(argc, argv);
-//        MainWindow w;
-//        w.show();
-//
-//        return a.exec();
+        return a.exec();
     }
 

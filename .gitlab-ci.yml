@@ -6,6 +6,7 @@ Ubuntu-subproject:
   script:
   - module load Qt-5.9
   - module load Eigen-3.1.2
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - bash .gitlab-ci.sh
   tags:
   - ubuntu
@@ -19,6 +20,7 @@ OSX-subproject:
   - module load Eigen-3.1.2
   - export BUILD_GENERATOR="Ninja";
   - export CMAKE_OSX_ARCHITECTURES=x86_64
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - bash .gitlab-ci.sh
   tags:
   - osx-sierra
@@ -33,6 +35,7 @@ Win7-VS14-x64-subproject:
   - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
   - set PATH=%PATH%;"c:\Program Files\Git\bin"
   - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
   - bash --login .gitlab-ci.sh
   tags:
   - win7

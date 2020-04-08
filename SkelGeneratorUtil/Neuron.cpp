@@ -19,7 +19,7 @@
 #include <fstream>
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
-#include <MeshReconstruct/MeshReconstructWrapper/MeshReconstruct.h>
+#include <MeshReconstructWrapper/MeshReconstruct.h>
 
 #define degreesToRadians(angleDegrees) (angleDegrees * M_PI / 180.0)
 

@@ -7,6 +7,7 @@
 #include <wrap/io_trimesh/import_obj.h>
 #include <vcg/simplex/face/distance.h>
 #include <vcg/complex/algorithms/isotropic_remeshing.h>
+#include <clocale>
 
 namespace skelgenerator {
 
