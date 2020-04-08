@@ -51,10 +51,9 @@ list( APPEND SKELGENERATOR_DEPENDENT_LIBRARIES
         Qt5::Widgets
         Eigen3
         VCG
-        meshreconstruct
+        meshreconstructwrapper
         ${Boost_LIBRARIES}
         )
-add_subdirectory( MeshReconstruct )
 add_subdirectory( SkelGenerator )
 add_subdirectory(SkelGeneratorUtil)
 

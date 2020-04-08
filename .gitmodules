@@ -2,6 +2,3 @@
 	path = VCG
 	url = https://github.com/cnr-isti-vclab/vcglib
 	branch = devel
-[submodule "MeshReconstruct"]
-	path = MeshReconstruct
-	url = git@gitlab.gmrv.es:ivelasco/meshreconstructwrapper.git

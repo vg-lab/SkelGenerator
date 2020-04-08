@@ -66,10 +66,9 @@ namespace skelgenerator {
 
       this->_numDendrites += _basalsFragments.size();
 
-      if (!this->_somaFile.empty()) {
-        this->generateSomaContours();
+      if (!this->_somaFile.empty() && meshreconstruct::MeshReconstruct::getInstance()->isInit()) {
+        this->generateSomaMesh( );
       }
-
 
       if (!imarisFile_.empty())
       {
@@ -330,25 +329,44 @@ namespace skelgenerator {
     std::string Neuron::to_asc() {
         std::string tab;
         std::stringstream ss;
-        ss << "(\"CellBody\"" << std::endl;
-        tab += "\t";
-        ss << tab << "(Color RGB (255, 128, 64))" << std::endl;
-        ss << tab << "(CellBody)" << std::endl;
+        if (_somaMesh == nullptr)
+        {
+          ss << "(\"CellBody\"" << std::endl;
+          tab += "\t";
+          ss << tab << "(Color RGB (255, 128, 64))" << std::endl;
+          ss << tab << "(CellBody)" << std::endl;
 
-        //Calculamos los puntos de la rodaja 2D a partir del centro y del radio del soma
+          //Calculamos los puntos de la rodaja 2D a partir del centro y del radio del soma
 
-        auto centerX = this->_soma.getPoint()[0];
-        auto centerY = this->_soma.getPoint()[1];
+          auto centerX = this->_soma.getPoint( )[ 0 ];
+          auto centerY = this->_soma.getPoint( )[ 1 ];
 
-        for (int i = 0; i < 360; i += 10) {
-            auto x = centerX + this->_soma.getRadius() * cos(degreesToRadians(i));
-            auto y = centerY + this->_soma.getRadius() * sin(degreesToRadians(i));
-            Eigen::Vector3d point(x, y, this->_soma.getPoint()[2]);
-            SamplePoint pointr(point, 0.15f);
-            ss << pointr.to_asc(tab) << std::endl;
+          for( int i = 0; i < 360; i += 10 )
+          {
+            auto x = centerX + this->_soma.getRadius( ) * cos( degreesToRadians( i ) );
+            auto y = centerY + this->_soma.getRadius( ) * sin( degreesToRadians( i ) );
+            Eigen::Vector3d point( x, y, this->_soma.getPoint( )[ 2 ] );
+            SamplePoint pointr( point, 0.15f );
+            ss << pointr.to_asc( tab ) << std::endl;
+          }
+
+          ss << ")" << std::endl;
+
+        } else {
+          auto contours = _somaMesh->getContours(0.15f);
+          for (const auto &contour: contours) {
+            ss << "(\"Soma\" " << std::endl;
+            ss << "\t" << "(Closed)" << std::endl;
+            ss << "\t" << "(FillDensity 0)" << std::endl;
+            ss << "\t" << "(MBFObjectType 5)" << std::endl;
+            for (const auto &point: contour) {
+              ss << "\t" << "(\t" << point[0]  << "\t" << point[1]  << "\t"
+                 << point[2]  <<  "\t0.24)" << std::endl;
+            }
+            ss << ")" << std::endl;
+          }
         }
 
-        ss << ")" << std::endl;
         if (this->_apical != nullptr)
             ss << this->_apical->to_asc(tab, 0);
         for (auto basal:this->_basals) {
@@ -1015,9 +1033,30 @@ namespace skelgenerator {
         }
     }
 
-  void Neuron::generateSomaContours( )
+  void Neuron::generateSomaMesh( )
   {
-    auto m = meshre
+      QTemporaryDir tempDir;
+    auto reconstruct = meshreconstruct::MeshReconstruct::getInstance();
+    reconstruct->repairFile( "a.csv", QString::fromStdString(this->_somaFile), "Obj", 10, 100, false, 3, true, tempDir.path());
+    QDir dir (tempDir.path() + "/a");
+    std::cout << dir.path().toStdString() << std::endl;
+    auto files = dir.entryList( { "*_R.obj"},QDir::Files);
+    _somaMesh = new Mesh (dir.path().toStdString() + "/" + files.last().toStdString());
+    _somaMesh->remesh();
+    _somaMesh->toObj("out.obj");
+  }
+
+  bool Neuron::hasSomaMesh( ) const
+  {
+    return this->_somaMesh != nullptr;
+  }
+
+  void Neuron::exportSomaMesh( const std::string& filePath )
+  {
+      if (this->_somaMesh != nullptr)
+      {
+        this->_somaMesh->toObj( filePath );
+      }
   }
 
 }

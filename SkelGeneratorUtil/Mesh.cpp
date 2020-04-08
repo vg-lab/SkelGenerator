@@ -4,7 +4,9 @@
 
 #include "Mesh.h"
 #include <wrap/io_trimesh/export_obj.h>
+#include <wrap/io_trimesh/import_obj.h>
 #include <vcg/simplex/face/distance.h>
+#include <vcg/complex/algorithms/isotropic_remeshing.h>
 
 namespace skelgenerator {
 
@@ -53,6 +55,15 @@ namespace skelgenerator {
         vcg::tri::UpdateNormal<MyMesh>::PerFaceNormalized(_mesh);
     }
 
+  Mesh::Mesh( const std::string& file )
+  {
+      int loadMask = 0;
+    std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+    if (vcg::tri::io::ImporterOBJ<MyMesh>::Open(_mesh, file.c_str(),loadMask) ) {
+      throw "Error to read Mesh";
+    }
+  }
+
     void Mesh::toObj(const std::string &path) {
         vcg::tri::io::ExporterOBJ<MyMesh>::Save(_mesh, path.c_str(), 0);
     }
@@ -93,5 +104,98 @@ namespace skelgenerator {
         
         return true;
     }
+
+  void Mesh::remesh( )
+  {
+    float targetLenPerc=.6f;
+    int iterNum=5;
+
+    // Mesh cleaning
+    vcg::tri::Clean<MyMesh>::RemoveDuplicateVertex(_mesh);
+    vcg::tri::Clean<MyMesh>::RemoveUnreferencedVertex(_mesh);
+    vcg::tri::Allocator<MyMesh>::CompactEveryVector(_mesh);
+    vcg::tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFaceNormalized(_mesh);
+    vcg::tri::UpdateBounding<MyMesh>::Box(_mesh);
+
+    MyMesh auxMesh;
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy( auxMesh, _mesh);
+    vcg::tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFaceNormalized( auxMesh);
+    vcg::tri::UpdateBounding<MyMesh>::Box( auxMesh);
+
+    vcg::tri::UpdateTopology<MyMesh>::FaceFace( auxMesh);
+    vcg::tri::MeshAssert<MyMesh>::FFTwoManifoldEdge( auxMesh);
+    float lengthThr = targetLenPerc*(_mesh.bbox.Diag()/100.f);
+
+
+    vcg::tri::IsotropicRemeshing<MyMesh>::Params params;
+    params.SetTargetLen(lengthThr);
+    params.SetFeatureAngleDeg(10);
+    params.iter=iterNum;
+    vcg::tri::IsotropicRemeshing<MyMesh>::Do(_mesh, auxMesh, params);
+
+  }
+
+  Mesh* Mesh::sliceAux(float z) {
+    vcg::Point3f planeCenter(0,0,z);
+    vcg::Point3f planeDir(0,0,1);
+    vcg::Plane3f plane;
+    plane.Init(planeCenter,planeDir);
+
+    Mesh* sliceContour = new Mesh();
+    vcg::IntersectionPlaneMesh<MyMesh,MyMesh,float>(this->_mesh,plane,sliceContour->_mesh);
+    vcg::tri::Clean<MyMesh>::RemoveDuplicateVertex(sliceContour->_mesh);
+    return sliceContour;
+  }
+
+
+  std::vector<Mesh*> Mesh::slice(float zStep) {
+    vcg::tri::UpdateBounding<MyMesh>::Box(_mesh);
+    auto min = _mesh.bbox.P(0);
+    float minZ = min[2];
+    auto max = _mesh.bbox.P(7);
+    float maxZ = max[2];
+    std::vector<Mesh* > contours;
+    for (float currentZ  = minZ; currentZ < maxZ ; currentZ+=zStep) {
+      contours.push_back(sliceAux(currentZ));
+    }
+
+    return contours;
+  }
+
+  std::vector<std::vector<Eigen::Vector3f>> Mesh::getContours(float zStep) {
+    auto contours = slice(zStep);
+    std::vector<std::vector<Eigen::Vector3f>> contoursEigen;
+    for (const auto &contour: contours) {
+      std::vector<Eigen::Vector3f> contourEigen;
+      MyVertex *initVertex = &(*(contour->_mesh.vert.begin()));
+      if (initVertex != nullptr) {
+        vcg::tri::UpdateTopology<MyMesh>::VertexEdge(contour->_mesh);
+        MyVertex *currentVertex = initVertex;
+        MyEdge *lastEdge = nullptr;
+        do {
+          auto point = currentVertex->P();
+          Eigen::Vector3f auxPoint(point[0], point[1], point[2]);
+          contourEigen.push_back(auxPoint);
+
+          vcg::edge::VEIterator<MyEdge> vei(currentVertex);
+          MyEdge *edge = nullptr;
+          if (vei.e == lastEdge) {
+            ++vei;
+            edge = vei.e;
+          } else {
+            edge = vei.e;
+          }
+
+          lastEdge = edge;
+          currentVertex = currentVertex == edge->V(0) ? edge->V(1) : edge->V(0);
+        } while (initVertex != currentVertex);
+        contoursEigen.push_back(contourEigen);
+      }
+
+      delete contour;
+    }
+    return contoursEigen;
+  }
+
 
 }

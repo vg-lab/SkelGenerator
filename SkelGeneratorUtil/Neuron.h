@@ -14,6 +14,7 @@
 #include "Dendrite.h"
 #include "Types.h"
 #include "Spine.h"
+#include "Mesh.h"
 
 namespace skelgenerator {
     /** Internally the class have Fragments in Section class until the skeleton is finished procesing.
@@ -30,6 +31,7 @@ namespace skelgenerator {
         std::vector<spineSet> _basalsSpines;
         int _segmentCounter;
         SamplePoint _soma;
+        Mesh* _somaMesh;
         Dendrite* _apical;
         std::vector<Dendrite *> _basals;
         float _connectionThreshold;
@@ -95,6 +97,10 @@ namespace skelgenerator {
 
         static bool collide(const Neuron::OOBB& BB1, const OOBB &BB2);
 
+        bool hasSomaMesh() const;
+
+        void exportSomaMesh(const std::string& filePath);
+
 
 
     private:
@@ -141,7 +147,7 @@ namespace skelgenerator {
 
         static bool checkPointsInsideMesh(const TFragment &cfragment, const TFragment &ifragment);
 
-      void generateSomaContours( );
+      void generateSomaMesh( );
     };
 }
 

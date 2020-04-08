@@ -13,4 +13,5 @@ Debug*
 Release*
 cmake-build*
 .idea
+MeshReconstruct
 

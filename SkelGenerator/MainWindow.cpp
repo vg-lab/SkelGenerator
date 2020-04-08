@@ -218,7 +218,7 @@ namespace skelgenerator {
             ignore = newThreshold < 0;
             if (!ignore) {
                 delete(neuron);
-                neuron = new Neuron( api, basals, <#initializer#>, "", "",
+                neuron = new Neuron( api, basals, "", "", "",
                                      newThreshold ); //TODO
                 sobrantes = neuron->getReamingSegments();
                 haveIncorrectConnection = neuron->isIncorrectConecctions();

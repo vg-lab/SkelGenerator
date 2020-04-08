@@ -1,0 +1,2 @@
+# -*- mode: cmake -*-
+git_subproject( MeshReconstruct git@gitlab.gmrv.es:ivelasco/meshreconstructwrapper.git b492653e )
