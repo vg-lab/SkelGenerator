@@ -2,3 +2,6 @@
 	path = VCG
 	url = https://github.com/cnr-isti-vclab/vcglib
 	branch = devel
+[submodule "CMake/common"]
+	path = CMake/common
+	url = https://github.com/Eyescale/CMake.git
