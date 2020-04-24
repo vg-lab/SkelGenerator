@@ -65,6 +65,7 @@ namespace skelgenerator {
 
         void addSpinesLongs (const std::string& longsFile_);
         void addImarisSpines( const std::string& imarisFile_);
+        void addSoma(const std::string& somaFile_);
         void clearImarisSpines();
         std::string to_asc();
         std::string to_asc(const std::vector<std::vector<Eigen::Vector3f>>& contours,const Eigen::Vector3f& displacement = {0,0,0});

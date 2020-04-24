@@ -132,7 +132,11 @@ namespace skelgenerator {
             if (line.find("FilamentSegment6") != std::string::npos) {
                 dendrite.fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
-                dendrite.spines.push_back(parseSpine(line, file));
+              auto spine = parseSpine(line,file);
+              if (!spine.shapes.empty())
+              {
+                dendrite.spines.push_back( spine );
+              }
             }
         }
         return dendrite;
@@ -163,7 +167,11 @@ namespace skelgenerator {
                 }
                 dendrites[index].fragments.push_back(parseFilament(line, file));
             } else if (line.find("FilamentSegment7") != std::string::npos) {
-                dendrites[index].spines.push_back(parseSpine(line, file));
+              auto spine = parseSpine(line,file);
+              if (!spine.shapes.empty())
+              {
+                dendrites[ index ].spines.push_back( spine );
+              }
             }
         }
         return dendrites;

@@ -43,6 +43,7 @@ namespace skelgenerator {
       this->_reamingSpines = 0;
       this->_reamingSegments = 0;
       this->_connectionThreshold = connectionThreshold_;
+      this->_somaMesh = nullptr;
       if (!apiFile_.empty())
       {
         auto apiDendrite = VRMLReader::readVrmlApical(apiFile_);
@@ -182,7 +183,7 @@ namespace skelgenerator {
                         float dist = (p1 - p2).norm();
                         dist = dist - p1r - p2r;
 
-                        if (dist < minDistance) {
+                        if (dist >= 0 && dist < minDistance) {
                             minDistance = dist;
                             minPoint1 = i;
                             minPoint2 = j;
@@ -915,8 +916,10 @@ namespace skelgenerator {
     }
 
 
-    void Neuron::addImarisSpines(const std::string &imarisFile_) {
-        this->_imarisSpines = VRMLReader::readImarisSpines(imarisFile_);
+    void Neuron::addImarisSpines(const std::string &imarisFile_)
+    {
+      this->_imarisFile = imarisFile_;
+      this->_imarisSpines = VRMLReader::readImarisSpines( imarisFile_ );
     }
 
     void Neuron::clearImarisSpines() {
@@ -1035,15 +1038,16 @@ namespace skelgenerator {
 
   void Neuron::generateSomaMesh( )
   {
-      QTemporaryDir tempDir;
-    auto reconstruct = meshreconstruct::MeshReconstruct::getInstance();
-    reconstruct->repairFile( "a.csv", QString::fromStdString(this->_somaFile), "Obj", 10, 100, false, 3, true, tempDir.path());
-    QDir dir (tempDir.path() + "/a");
-    std::cout << dir.path().toStdString() << std::endl;
-    auto files = dir.entryList( { "*_R.obj"},QDir::Files);
-    _somaMesh = new Mesh (dir.path().toStdString() + "/" + files.last().toStdString());
-    _somaMesh->remesh();
-    _somaMesh->toObj("out.obj");
+    QTemporaryDir tempDir;
+    QFileInfo fileInfo (QString::fromStdString(this->_somaFile));
+    auto reconstruct = meshreconstruct::MeshReconstruct::getInstance( );
+    reconstruct->repairFile( "a.csv", QString::fromStdString( this->_somaFile ), "Obj", 10, 100, false, 3, true,
+                             tempDir.path( ) );
+    QDir dir( tempDir.path( ) + "/" + fileInfo.baseName() );
+    std::cout << dir.path( ).toStdString( ) << std::endl;
+    auto files = dir.entryList( { "*_R.obj" }, QDir::Files );
+    _somaMesh = new Mesh( dir.path( ).toStdString( ) + "/" + files.last( ).toStdString( ) );
+    _somaMesh->remesh( );
   }
 
   bool Neuron::hasSomaMesh( ) const
@@ -1057,6 +1061,15 @@ namespace skelgenerator {
       {
         this->_somaMesh->toObj( filePath );
       }
+  }
+
+  void Neuron::addSoma( const std::string& somaFile_ )
+  {
+    this->_somaFile = somaFile_;
+    if( !this->_somaFile.empty( ) && meshreconstruct::MeshReconstruct::getInstance( )->isInit( ) )
+    {
+      this->generateSomaMesh( );
+    }
   }
 
 }
