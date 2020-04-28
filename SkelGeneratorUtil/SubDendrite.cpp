@@ -22,6 +22,11 @@ namespace skelgenerator {
     }
 
     std::string SubDendrite::to_asc(std::string tab, int init) {
+      if ((this->getRamification1() == nullptr || this->getRamification2() == nullptr) &&
+          !(this->getRamification1() == nullptr && this->getRamification2() == nullptr)) {
+        std::cerr << "[ERROR] Found only 1 subDendrite, this is error in skelgenerator" << std::endl;
+      }
+
         std::stringstream ss;
         tab += "\t";
         ss << this->sec.to_asc(tab, init);
