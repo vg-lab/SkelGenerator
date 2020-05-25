@@ -6,6 +6,7 @@ Ubuntu-subproject:
   script:
   - module load Qt-5.9
   - module load Eigen-3.1.2
+  - export BOOST_ROOT="/home/ivelascog/boost_1_73"
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - bash .gitlab-ci.sh
   tags:

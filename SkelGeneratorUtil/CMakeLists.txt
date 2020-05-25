@@ -26,7 +26,7 @@ set(SKELGENERATORUTIL_HEADERS
 set(SKELGENERATORUTIL_LINK_LIBRARIES
         ${Boost_LIBRARIES}
         Qt5::Core
-        meshreconstructwrapper
+        MeshReconstructWrapper
         )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
