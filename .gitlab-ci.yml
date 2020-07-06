@@ -1,0 +1,56 @@
+stages:
+  - build
+
+Ubuntu-subproject:
+  stage: build
+  script:
+  - module load Qt-5.9 Eigen-3.1.2 boost-1.73.0
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - bash .gitlab-ci.sh
+  tags:
+  - ubuntu
+  except:
+  - tags
+  - master
+
+Ubuntu-subproject-master:
+  stage: build
+  script:
+  - export GITHUB_MIRROR_URL="git@github.com:vg-lab/SkelGenerator"
+  - module load Qt-5.9 Eigen-3.1.2 boost-1.73.0
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - bash .gitlab-ci.sh
+  tags:
+  - ubuntu
+  only:
+  - master
+
+
+OSX-subproject:
+  stage: build
+  script:
+  - module load Qt-5.9.1
+  - module load Eigen-3.1.2
+  - export BUILD_GENERATOR="Ninja";
+  - export CMAKE_OSX_ARCHITECTURES=x86_64
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - bash .gitlab-ci.sh
+  tags:
+  - osx-sierra
+  except:
+  - tags
+
+Win7-VS14-x64-subproject:
+  stage: build
+  script:
+  - call %ENVFILESDIR%\Qt-5.9-vs14.bat
+  - call %ENVFILESDIR%\Boost-1.64-vs14-x64.bat
+  - call %ENVFILESDIR%\eigen-3.1.2-vs12-x64.bat
+  - set PATH=%PATH%;"c:\Program Files\Git\bin"
+  - set BUILD_GENERATOR=Visual Studio 14 Win64
+  - set CMAKE_EXTRA_ARGS=-DCLONE_SUBPROJECTS=ON
+  - bash --login .gitlab-ci.sh
+  tags:
+  - win7
+  except:
+  - tags

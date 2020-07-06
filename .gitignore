@@ -1,0 +1,16 @@
+src
+*~
+doc/html
+doc/latex
+*Makefile*
+*.orig
+.ciscript
+ci.*
+jambs*
+#*
+Debug*
+Release*
+cmake-build*
+.idea
+MeshReconstruct
+
