@@ -4,15 +4,27 @@ stages:
 Ubuntu-subproject:
   stage: build
   script:
-  - module load Qt-5.9
-  - module load Eigen-3.1.2
-  - export BOOST_ROOT="/home/ivelascog/boost_1_73"
+  - module load Qt-5.9 Eigen-3.1.2 boost-1.73.0
   - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
   - bash .gitlab-ci.sh
   tags:
   - ubuntu
   except:
   - tags
+  - master
+
+Ubuntu-subproject-master:
+  stage: build
+  script:
+  - export GITHUB_MIRROR_URL="git@github.com:vg-lab/SkelGenerator"
+  - module load Qt-5.9 Eigen-3.1.2 boost-1.73.0
+  - export CMAKE_EXTRA_ARGS="-DCLONE_SUBPROJECTS=ON"
+  - bash .gitlab-ci.sh
+  tags:
+  - ubuntu
+  only:
+  - master
+
 
 OSX-subproject:
   stage: build
